@@ -1,0 +1,659 @@
+#====================================================================================================
+# REGION AND AVAILABILITY ZONES
+#====================================================================================================
+# @ui-group: Region and Availability Zones
+# @ui-order: 1
+# @ui-description: AWS region and availability zone selection for FortiGate deployment
+
+# @ui-type: select
+# @ui-source: aws-regions
+# @ui-label: AWS Region
+# @ui-description: AWS region where all resources will be deployed
+# @ui-required: true
+# @ui-width: full
+# @ui-default: us-west-2
+aws_region          = "us-west-2"
+
+# @ui-type: select
+# @ui-source: aws-availability-zones
+# @ui-depends-on: aws_region
+# @ui-label: Availability Zone 1
+# @ui-description: First AZ for multi-AZ deployment (specify as single letter: a, b, c, etc.)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: a
+availability_zone_1 = "a"
+
+# @ui-type: select
+# @ui-source: aws-availability-zones
+# @ui-depends-on: aws_region
+# @ui-label: Availability Zone 2
+# @ui-description: Second AZ for multi-AZ deployment (must differ from AZ 1)
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: different-from:availability_zone_1
+# @ui-default: c
+availability_zone_2 = "c"
+
+#====================================================================================================
+# RESOURCE IDENTIFICATION
+#====================================================================================================
+# @ui-group: Resource Identification
+# @ui-order: 2
+# @ui-description: Customer prefix and environment for resource naming and tagging. CRITICAL: These values MUST MATCH between existing_vpc_resources and autoscale_template for resource discovery.
+
+# @ui-type: text
+# @ui-label: Customer Prefix
+# @ui-description: Customer prefix for resource naming (e.g., company/project name)
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min-length:2,max-length:20
+# @ui-default: acme
+# @ui-help: Format: <cp>-<env>-<resource_name> (e.g., "acme-test-inspection-vpc")
+cp  = "acme"
+
+# @ui-type: text
+# @ui-label: Environment
+# @ui-description: Environment name (prod, test, dev, staging, etc.)
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min-length:2,max-length:20
+# @ui-default: test
+env = "test"
+
+#====================================================================================================
+# FORTIGATE INSTANCE CONFIGURATION
+#====================================================================================================
+# @ui-group: FortiGate Instance Configuration
+# @ui-order: 3
+# @ui-description: FortiGate instance type, version, credentials, and configuration settings
+
+# @ui-type: select
+# @ui-source: aws-keypairs
+# @ui-depends-on: aws_region
+# @ui-label: FortiGate EC2 Key Pair
+# @ui-description: AWS EC2 keypair for SSH access to FortiGate instances (must already exist in target region)
+# @ui-required: true
+# @ui-width: half
+# @ui-help: Use 'aws ec2 describe-key-pairs' to list available keypairs
+keypair = ""
+
+# @ui-type: text
+# @ui-label: FortiGate Management CIDRs
+# @ui-description: Comma-separated list of IP/CIDR blocks allowed to access FortiGate management interfaces
+# @ui-required: true
+# @ui-width: full
+# @ui-placeholder: 1.2.3.4/32, 5.6.7.0/24
+# @ui-help: Allows access to HTTPS (443/80), SSH (22), SNMP (161/162), FortiManager (541), IPsec (500/4500), and Syslog (514). Find your IP: curl ifconfig.me
+fortigate_management_cidr = ""
+
+# @ui-type: password
+# @ui-label: FortiGate Admin Password
+# @ui-description: Admin password for all FortiGate instances in the autoscale group
+# @ui-required: true
+# @ui-width: full
+# @ui-validation: min-length:8
+# @ui-help: CRITICAL: Must be specified. Minimum 8 characters. Password syncs across all instances via HA.
+fortigate_asg_password = ""
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: c6i.xlarge|c6i.xlarge (4 vCPU - Small/Medium),c6i.2xlarge|c6i.2xlarge (8 vCPU - Medium),c7gn.large|c7gn.large (2 vCPU ARM - Minimal),c7gn.xlarge|c7gn.xlarge (4 vCPU ARM),c7gn.2xlarge|c7gn.2xlarge (8 vCPU ARM),c8gn.xlarge|c8gn.xlarge (4 vCPU ARM - Latest),c8gn.2xlarge|c8gn.2xlarge (8 vCPU ARM - Latest),c8gn.4xlarge|c8gn.4xlarge (16 vCPU ARM - High Performance)
+# @ui-label: FortiGate Instance Type
+# @ui-description: EC2 instance type for FortiGate (determines CPU, memory, network performance)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: c7gn.xlarge
+# @ui-help: c6i: Intel x86, c7gn/c8gn: ARM Graviton (cost-optimized). c8gn is latest generation with best price/performance.
+fgt_instance_type = "c7gn.xlarge"
+
+# @ui-type: text
+# @ui-label: FortiOS Version
+# @ui-description: FortiOS version to deploy (X.Y.Z for specific, X.Y for latest patch)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 7.6
+# @ui-help: Example: "7.4.5" for specific version, "7.4" for latest 7.4.x
+# @ui-link: https://docs.fortinet.com/product/fortigate/
+fortios_version = "7.6"
+
+# @ui-type: number
+# @ui-label: FortiGate GUI Port
+# @ui-description: HTTPS port for web management interface
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:1,max:65535
+# @ui-default: 443
+# @ui-help: Default: 443 (standard HTTPS), Alternative: 8443
+fortigate_gui_port = 443
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: 1-arm|1-Arm (Single Interface),2-arm|2-Arm (Dual Interface)
+# @ui-label: Firewall Policy Mode
+# @ui-description: FortiGate interface architecture for traffic inspection
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 2-arm
+# @ui-help: 1-arm: Hairpin traffic pattern. 2-arm: Separate trusted/untrusted interfaces.
+firewall_policy_mode = "2-arm"
+
+# @ui-type: checkbox
+# @ui-label: Enable Dedicated Management ENI
+# @ui-description: Dedicate port2 as management interface (removes from data plane)
+# @ui-width: full
+# @ui-exclusive-with: enable_dedicated_management_vpc
+# @ui-default: false
+# @ui-help: If enabled with dedicated management VPC or management subnets in inspection VPC, dedicates port2 as management interface (removes from data plane). If disabled, creates an additional ENI in the management VPC or management subnets of inspection VPC. No dedicated management interface is created without dedicated management VPC or management subnets enabled.
+enable_dedicated_management_eni = false
+
+#====================================================================================================
+# MANAGEMENT VPC INTEGRATION
+#====================================================================================================
+# @ui-group: Management Options
+# @ui-order: 4
+# @ui-description: FortiGate management interface and VPC integration options
+
+# @ui-type: checkbox
+# @ui-label: Enable Dedicated Management VPC
+# @ui-description: Connect FortiGate management interfaces to separate management VPC (inherited from existing_vpc_resources)
+# @ui-width: full
+# @ui-exclusive-with: enable_dedicated_management_eni
+# @ui-default: false
+# @ui-readonly: true
+# @ui-help: This value is inherited from existing_vpc_resources template and cannot be changed here
+enable_dedicated_management_vpc = false
+
+# @ui-type: checkbox
+# @ui-label: Enable East-West Inspection
+# @ui-description: Route spoke-to-spoke traffic through FortiGate for inspection
+# @ui-width: full
+# @ui-default: true
+# @ui-help: Set to true to inspect inter-VPC traffic, false to allow direct spoke-to-spoke communication
+enable_east_west_inspection = true
+
+#====================================================================================================
+# GATEWAY LOAD BALANCER CONFIGURATION
+#====================================================================================================
+# @ui-group: GWLB Load Balancer Configuration
+# @ui-order: 6
+# @ui-description: GWLB settings and VPC CIDR configuration
+
+# @ui-type: checkbox
+# @ui-label: Allow Cross-Zone Load Balancing
+# @ui-description: GWLB can send traffic to FortiGates in any AZ (recommended for production)
+# @ui-width: full
+# @ui-default: true
+# @ui-help: Set to false to avoid cross-AZ data transfer charges ($0.01/GB)
+allow_cross_zone_load_balancing = true
+
+# @ui-type: text
+# @ui-label: GWLB Endpoint Name AZ1
+# @ui-description: Name for GWLB endpoint in first availability zone
+# @ui-required: true
+# @ui-width: half
+# @ui-help: Used for route table configuration to direct traffic through endpoints
+endpoint_name_az1 = ""
+
+# @ui-type: text
+# @ui-label: GWLB Endpoint Name AZ2
+# @ui-description: Name for GWLB endpoint in second availability zone
+# @ui-required: true
+# @ui-width: half
+endpoint_name_az2 = ""
+
+# @ui-type: number
+# @ui-label: GWLB Health Check Port
+# @ui-description: Port used for health checks (FortiGate probe response port)
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:1,max:65535
+# @ui-default: 8008
+# @ui-help: Default 8008 is FortiGate's GWLB health probe port
+gwlb_health_check_port = 8008
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: HTTP|HTTP,HTTPS|HTTPS,TCP|TCP
+# @ui-label: GWLB Health Check Protocol
+# @ui-description: Protocol used for health checks
+# @ui-required: true
+# @ui-width: half
+# @ui-default: HTTP
+gwlb_health_check_protocol = "HTTP"
+
+# @ui-type: slider
+# @ui-label: GWLB Healthy Threshold
+# @ui-description: Number of consecutive successful health checks before considering target healthy
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:2,max:10
+# @ui-default: 5
+gwlb_healthy_threshold = 5
+
+# @ui-type: number
+# @ui-label: GWLB Health Check Interval (seconds)
+# @ui-description: Time between health checks (must be >= timeout)
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:5,max:300
+# @ui-default: 60
+gwlb_health_check_interval = 60
+
+# @ui-type: slider
+# @ui-label: GWLB Health Check Timeout (seconds)
+# @ui-description: Time to wait for health check response (must be < interval)
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:2,max:120
+# @ui-default: 5
+gwlb_health_check_timeout = 5
+
+# @ui-type: slider
+# @ui-label: GWLB Unhealthy Threshold
+# @ui-description: Number of consecutive failed health checks before considering target unhealthy
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:2,max:10
+# @ui-default: 3
+gwlb_unhealthy_threshold = 3
+
+vpc_cidr_management = "10.3.0.0/16"
+vpc_cidr_spoke = "192.168.0.0/16"
+vpc_cidr_east  = "192.168.0.0/24"
+vpc_cidr_west  = "192.168.1.0/24"
+subnet_bits = 8
+
+#====================================================================================================
+# AUTOSCALE GROUP CAPACITY
+#====================================================================================================
+# @ui-group: Autoscale Group Capacity
+# @ui-order: 7
+# @ui-description: Autoscale group sizing and scaling thresholds
+
+# @ui-type: text
+# @ui-label: ASG Module Prefix
+# @ui-description: Prefix for autoscale group resource names
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min-length:2,max-length:20
+# @ui-default: asg
+# @ui-help: Results in names like "acme-test-asg-byol", "acme-test-asg-ondemand"
+asg_module_prefix = "asg"
+
+# @ui-type: checkbox
+# @ui-label: Primary Scale-In Protection
+# @ui-description: Protect primary instance from termination during scale-in
+# @ui-width: half
+# @ui-default: true
+# @ui-help: Recommended for production (maintains configuration stability)
+primary_scalein_protection = true
+
+# @ui-type: slider
+# @ui-label: Scale-In CPU Threshold (%)
+# @ui-description: CPU utilization percentage that triggers scale-in
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:10,max:50
+# @ui-default: 20
+# @ui-help: When average CPU drops below this threshold, instances are terminated.
+asg_scale_in_threshold = 20
+
+# @ui-type: slider
+# @ui-label: Scale-Out CPU Threshold (%)
+# @ui-description: CPU utilization percentage that triggers scale-out
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:50,max:95
+# @ui-default: 80
+# @ui-help: When average CPU exceeds this threshold, additional instances are launched.
+asg_scale_out_threshold = 80
+
+# @ui-type: slider
+# @ui-label: BYOL Min Size
+# @ui-description: Minimum BYOL instances to maintain
+# @ui-required: true
+# @ui-width: third
+# @ui-validation: min:0,max:10
+# @ui-default: 1
+# @ui-help: Use BYOL/FortiFlex for baseline 24/7 capacity to minimize costs. Must be <= Max Size.
+# @ui-show-if: autoscale_license_model != "on_demand"
+asg_byol_asg_min_size     = 1
+
+# @ui-type: slider
+# @ui-label: BYOL Max Size
+# @ui-description: Maximum BYOL instances for scale-out
+# @ui-required: true
+# @ui-width: third
+# @ui-validation: min:0,max:10
+# @ui-default: 2
+# @ui-help: Must be >= Min Size.
+# @ui-show-if: autoscale_license_model != "on_demand"
+asg_byol_asg_max_size     = 2
+
+# @ui-type: slider
+# @ui-label: BYOL Desired Size
+# @ui-description: Target BYOL instance count
+# @ui-required: true
+# @ui-width: third
+# @ui-validation: min:0,max:10,gte:asg_byol_asg_min_size,lte:asg_byol_asg_max_size
+# @ui-default: 1
+# @ui-help: Must be >= Min Size and <= Max Size.
+# @ui-show-if: autoscale_license_model != "on_demand"
+asg_byol_asg_desired_size = 1
+
+# @ui-type: slider
+# @ui-label: On-Demand Min Size
+# @ui-description: Minimum PAYG instances (set to 0 for burst-only capacity)
+# @ui-required: true
+# @ui-width: third
+# @ui-validation: min:0,max:10
+# @ui-default: 0
+# @ui-help: Use PAYG for burst capacity above BYOL baseline. Must be <= Max Size.
+# @ui-show-if: autoscale_license_model != "byol"
+asg_ondemand_asg_min_size     = 0
+
+# @ui-type: slider
+# @ui-label: On-Demand Max Size
+# @ui-description: Maximum PAYG burst instances
+# @ui-required: true
+# @ui-width: third
+# @ui-validation: min:0,max:10
+# @ui-default: 2
+# @ui-help: Must be >= Min Size.
+# @ui-show-if: autoscale_license_model != "byol"
+asg_ondemand_asg_max_size     = 2
+
+# @ui-type: slider
+# @ui-label: On-Demand Desired Size
+# @ui-description: Target PAYG instance count (set to 0 to avoid running 24/7)
+# @ui-required: true
+# @ui-width: third
+# @ui-validation: min:0,max:10,gte:asg_ondemand_asg_min_size,lte:asg_ondemand_asg_max_size
+# @ui-default: 0
+# @ui-help: Must be >= Min Size and <= Max Size.
+# @ui-show-if: autoscale_license_model != "byol"
+asg_ondemand_asg_desired_size = 0
+
+# @ui-type: slider
+# @ui-label: ASG Health Check Grace Period (seconds)
+# @ui-description: Time after instance launch before health checks start
+# @ui-required: true
+# @ui-width: half
+# @ui-validation: min:60,max:1800
+# @ui-default: 700
+# @ui-help: Allow enough time for FortiGate to boot and register with GWLB (default 700s)
+asg_health_check_grace_period = 700
+
+#====================================================================================================
+# LICENSING CONFIGURATION
+#====================================================================================================
+# @ui-group: Licensing Configuration
+# @ui-order: 8
+# @ui-description: License model selection and BYOL/FortiFlex configuration
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: hybrid|Hybrid (BYOL + On-Demand),byol|BYOL Only,on_demand|On-Demand (PAYG) Only
+# @ui-label: License Model
+# @ui-description: Choose licensing strategy for autoscale group
+# @ui-required: true
+# @ui-width: full
+# @ui-default: hybrid
+# @ui-help: Hybrid: BYOL instances as baseline, On-Demand for burst capacity. BYOL: Only licensed instances. On-Demand: Only PAYG instances.
+autoscale_license_model = "hybrid"
+
+# @ui-type: text
+# @ui-label: BYOL License Directory
+# @ui-description: Relative path to directory containing FortiGate BYOL .lic files
+# @ui-required: false
+# @ui-width: full
+# @ui-default: asg_license
+# @ui-help: Only required if using BYOL licenses. Ensure you have at least asg_byol_asg_max_size license files.
+# @ui-show-if: autoscale_license_model != "on_demand"
+asg_license_directory = "asg_license"
+
+# @ui-type: text
+# @ui-label: FortiFlex Username (UUID)
+# @ui-description: FortiFlex API username for usage-based licensing
+# @ui-required: false
+# @ui-width: half
+# @ui-placeholder: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# @ui-help: Leave empty if using BYOL files or PAYG only
+# @ui-show-if: autoscale_license_model != "on_demand"
+fortiflex_username      = ""
+
+# @ui-type: password
+# @ui-label: FortiFlex Password
+# @ui-description: FortiFlex API password
+# @ui-required: false
+# @ui-width: half
+# @ui-help: Leave empty if using BYOL files or PAYG only
+# @ui-show-if: autoscale_license_model != "on_demand"
+fortiflex_password      = ""
+
+# @ui-type: text
+# @ui-label: FortiFlex Serial Number List
+# @ui-description: Comma-separated FortiFlex serial numbers (optional)
+# @ui-required: false
+# @ui-width: full
+# @ui-placeholder: FGVMELTMxxxxxxxx,FGVMELTMxxxxxxxx
+# @ui-help: Optional: Restrict to specific programs
+# @ui-show-if: autoscale_license_model != "on_demand"
+fortiflex_sn_list       = ""
+
+# @ui-type: text
+# @ui-label: FortiFlex Configuration ID List
+# @ui-description: Comma-separated FortiFlex configuration IDs from portal
+# @ui-required: false
+# @ui-width: full
+# @ui-placeholder: STD_ASG_FGT_4XvcpuFortiGate-VM
+# @ui-show-if: autoscale_license_model != "on_demand"
+fortiflex_configid_list = ""
+
+#====================================================================================================
+# FORTIMANAGER INTEGRATION (OPTIONAL)
+#====================================================================================================
+# @ui-group: FortiManager Integration (Optional)
+# @ui-order: 9
+# @ui-description: Centralized policy management and device orchestration
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiManager Integration
+# @ui-description: Register primary FortiGate with FortiManager for centralized management
+# @ui-width: full
+# @ui-default: false
+# @ui-help: Requires FortiManager 7.6.3+ with 'config system global / set fgfm-allow-vm enable'
+enable_fortimanager_integration = false
+
+# @ui-type: text
+# @ui-label: FortiManager IP or FQDN
+# @ui-description: FortiManager IP address or FQDN (must be reachable from FortiGate)
+# @ui-required: false
+# @ui-width: half
+# @ui-placeholder: 10.3.0.14
+# @ui-help: Private IP if using management VPC. Ensure security groups allow TCP 541.
+# @ui-show-if: enable_fortimanager_integration == true
+fortimanager_ip = ""
+
+# @ui-type: text
+# @ui-label: FortiManager Serial Number
+# @ui-description: FortiManager serial number for device registration
+# @ui-required: false
+# @ui-width: half
+# @ui-placeholder: FMGVM0000000001
+# @ui-help: Find in FortiManager: System Settings > Dashboard > System Information
+# @ui-show-if: enable_fortimanager_integration == true
+fortimanager_sn = ""
+
+# @ui-type: number
+# @ui-label: FortiManager VRF Select
+# @ui-description: Routing domain for FortiManager connectivity (0=Global, 1+=Management VRF)
+# @ui-required: false
+# @ui-width: half
+# @ui-validation: min:0,max:255
+# @ui-default: 0
+# @ui-help: Typically use 1 if enable_dedicated_management_eni = true
+# @ui-show-if: enable_fortimanager_integration == true
+fortimanager_vrf_select = 0
+
+# @ui-hidden: true
+base_config_file = "fgt-conf.cfg"
+
+# @ui-hidden: true
+acl = "private"
+
+#====================================================================================================
+# CONFIGURATION EXAMPLES AND USE CASES
+#====================================================================================================
+#
+# USE CASE 1: Lab Environment with Transit Gateway
+# ------------------------------------------------
+# Complete testing environment connecting to TGW created by existing_vpc_resources
+#
+# enable_tgw_attachment           = true
+# attach_to_tgw_name              = "acme-test-tgw"
+# create_tgw_routes_for_existing  = true
+# enable_dedicated_management_vpc = true
+# enable_east_west_inspection     = true
+#
+# USE CASE 2: Production Integration with Existing TGW
+# -----------------------------------------------------
+# Deploy FortiGate inspection to existing production Transit Gateway
+#
+# enable_tgw_attachment           = true
+# attach_to_tgw_name              = "production-tgw"  # Your existing TGW name
+# create_tgw_routes_for_existing  = false
+# enable_dedicated_management_vpc = false
+# enable_fortimanager_integration = true
+# fortimanager_ip                 = "10.x.x.x"
+#
+# USE CASE 3: Distributed Inspection (No TGW)
+# --------------------------------------------
+# Bump-in-the-wire inspection where spoke VPCs have their own internet gateways
+#
+# enable_tgw_attachment           = false
+# enable_east_west_inspection     = false
+# firewall_policy_mode            = "1-arm"
+# enable_dedicated_management_vpc = false
+#
+# USE CASE 4: Hybrid Licensing (Cost Optimization)
+# -------------------------------------------------
+# BYOL baseline capacity with PAYG burst capacity
+#
+# asg_byol_asg_min_size           = 2
+# asg_byol_asg_max_size           = 4
+# asg_byol_asg_desired_size       = 2
+# asg_ondemand_asg_min_size       = 0
+# asg_ondemand_asg_max_size       = 6
+# asg_ondemand_asg_desired_size   = 0
+# asg_license_directory           = "asg_license"  # Contains 4 BYOL licenses
+#
+#====================================================================================================
+# IMPORTANT NOTES
+#====================================================================================================
+#
+# 1. MATCHING VALUES WITH EXISTING_VPC_RESOURCES
+#    - cp and env MUST match between templates for resource discovery
+#    - attach_to_tgw_name MUST match between templates for TGW attachment
+#    - vpc_cidr_management MUST match if using dedicated management VPC integration
+#    - dedicated_management_vpc_tag values MUST match management VPC resource tags
+#
+# 2. REQUIRED PASSWORDS
+#    - fortigate_asg_password MUST be set (minimum 8 characters)
+#    - If left empty, you will NOT be able to login to FortiGate instances
+#    - Password syncs across all instances in the autoscale group via HA sync
+#
+# 3. LICENSING REQUIREMENTS
+#    - For BYOL: Place license files in asg_license_directory before deployment
+#    - Ensure license count >= asg_byol_asg_max_size
+#    - For FortiFlex: Configure API credentials and create configurations in FortiFlex portal
+#    - For PAYG: No configuration needed, set BYOL capacity to 0
+#
+# 4. FORTIMANAGER INTEGRATION
+#    - FortiManager 7.6.3+ requires: config system global / set fgfm-allow-vm enable / end
+#    - Only primary FortiGate registers with FortiManager (prevents orphaned devices)
+#    - FortiManager must be reachable from FortiGate management interfaces
+#    - Verify network connectivity and security groups allow TCP 541
+#
+# 5. CIDR PLANNING
+#    - Ensure vpc_cidr_inspection does not overlap with management or spoke VPCs
+#    - Reserve sufficient subnet space for multi-AZ deployment
+#    - Plan for future growth when selecting CIDR ranges
+#
+# 6. CAPACITY PLANNING
+#    - Start with min_size=1, max_size=2 for initial testing
+#    - Monitor CloudWatch metrics to determine appropriate capacity
+#    - Set max_size based on peak traffic + 20% buffer
+#    - Consider FortiGate instance type throughput capabilities
+#
+# 7. COST OPTIMIZATION
+#    - Use BYOL/FortiFlex for baseline capacity (24/7 operation)
+#    - Use PAYG for burst capacity (intermittent scale-out)
+#    - Disable enable_dedicated_management_vpc if using existing management
+#    - Choose access_internet_mode="eip" to avoid NAT Gateway costs if predictable IPs not required
+#
+# 8. PRODUCTION CONSIDERATIONS
+#    - Set primary_scalein_protection = true (prevents primary instance termination)
+#    - Enable FortiManager integration for centralized management
+#    - Use enable_dedicated_management_eni = true for management plane isolation
+#    - Set allow_cross_zone_load_balancing = true for maximum availability
+#    - Implement proper monitoring and alerting for autoscale events
+#    - Test failover and scaling scenarios before production deployment
+#
+# 9. TRANSIT GATEWAY ROUTING
+#    - Verify TGW route tables route spoke traffic to inspection VPC attachments
+#    - For centralized egress: Spoke VPCs route 0.0.0.0/0 to TGW
+#    - For east-west inspection: Spoke-to-spoke routes point to TGW
+#    - Test traffic flows thoroughly before production cutover
+#
+#====================================================================================================
+
+#====================================================================================================
+# DISTRIBUTED EGRESS CONFIGURATION
+#====================================================================================================
+# @ui-group: Distributed Egress
+# @ui-order: 10
+# @ui-description: Configure GWLB endpoints in distributed egress VPCs for bump-in-the-wire inspection
+
+# @ui-type: boolean
+# @ui-label: Enable Distributed Egress
+# @ui-description: Automatically discover and configure GWLB endpoints in distributed egress VPCs
+# @ui-help: Discovers VPCs tagged with purpose=distributed_egress (created by existing_vpc_resources). Traffic hairpins through FortiGates then egresses via local IGW/NAT.
+# @ui-required: false
+# @ui-width: full
+enable_distributed_inspection = false
+
+# DISTRIBUTED EGRESS NOTES:
+#
+# 1. PREREQUISITES
+#    - Deploy existing_vpc_resources with enable_distributed_egress_vpcs = true
+#    - Configure distributed_egress_vpc_count and CIDR blocks as needed
+#    - Each distributed VPC includes GWLBE subnets (created automatically)
+#
+# 2. DISCOVERY
+#    - Module discovers VPCs by tag: purpose = "distributed_egress"
+#    - Discovers GWLBE subnets by name pattern: *-gwlbe-*-subnet
+#    - No manual configuration required - all tagged VPCs discovered automatically
+#
+# 3. GWLB ENDPOINT CREATION
+#    - Module creates one GWLB endpoint per GWLBE subnet (2 per VPC for HA)
+#    - Endpoints connect to same GWLB as centralized inspection VPC
+#    - Traffic flows: Spoke workload → GWLBE → FortiGate → GWLBE → IGW/NAT
+#
+# 4. FIREWALL POLICY
+#    - All distributed VPCs use same firewall policy (single VDOM mode)
+#    - For different policies per VPC: Requires multi-VDOM mode (additional licensing)
+#
+# 5. ROUTING
+#    - Module configures bump-in-the-wire routing automatically
+#    - Private subnets route 0.0.0.0/0 → GWLB endpoint
+#    - GWLBE subnets route 0.0.0.0/0 → Internet Gateway
+#    - Public subnets route 0.0.0.0/0 → Internet Gateway
+#
+# 6. KEY DIFFERENCES FROM TGW MODEL
+#    - Distributed VPCs are NOT attached to Transit Gateway
+#    - Egress traffic exits via local IGW/NAT (not centralized through inspection VPC)
+#    - Reduces TGW data processing costs for egress-heavy workloads
+#
+#====================================================================================================

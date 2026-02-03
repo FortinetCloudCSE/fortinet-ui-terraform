@@ -1,0 +1,9 @@
+verify_scripts/terraform_verification_data.sh
+
+# UI generated configuration file
+ui_config.json
+terraform.tfvars
+**/*.lic
+terraform.tfstate
+terraform.tfstate.backup
+**/*.log

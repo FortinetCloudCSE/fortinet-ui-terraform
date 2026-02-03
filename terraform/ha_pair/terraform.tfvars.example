@@ -1,0 +1,329 @@
+#====================================================================================================
+# REGION AND AVAILABILITY ZONES
+#====================================================================================================
+# @ui-group: Region and Availability Zones
+# @ui-order: 1
+# @ui-description: AWS region and availability zone selection (inherited from existing_vpc_resources)
+
+# @ui-type: text
+# @ui-label: AWS Region
+# @ui-description: AWS region where resources will be deployed
+# @ui-required: true
+# @ui-width: full
+# @ui-default: us-west-1
+# @ui-help: Must match the region used in existing_vpc_resources deployment
+# @ui-readonly: true
+aws_region = "us-west-1"
+
+# @ui-type: text
+# @ui-label: Availability Zone 1
+# @ui-description: First availability zone (appended to region)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: a
+# @ui-help: Must match the availability zone used in existing_vpc_resources
+# @ui-readonly: true
+availability_zone_1 = "a"
+
+# @ui-type: text
+# @ui-label: Availability Zone 2
+# @ui-description: Second availability zone (appended to region)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: b
+# @ui-help: Must match the availability zone used in existing_vpc_resources
+# @ui-readonly: true
+availability_zone_2 = "b"
+
+#====================================================================================================
+# RESOURCE IDENTIFICATION
+#====================================================================================================
+# @ui-group: Resource Identification
+# @ui-order: 2
+# @ui-description: Project and environment identifiers for resource naming (inherited from existing_vpc_resources)
+
+# @ui-type: text
+# @ui-label: Customer Prefix
+# @ui-description: Identifier prepended to all resources (e.g., company/project name)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: acme
+# @ui-help: IMPORTANT: Must match value from existing_vpc_resources for resource discovery
+# @ui-readonly: true
+cp = "acme"
+
+# @ui-type: text
+# @ui-label: Environment
+# @ui-description: Environment identifier (prod, test, dev, staging, etc.)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: test
+# @ui-help: IMPORTANT: Must match value from existing_vpc_resources for resource discovery
+# @ui-readonly: true
+env = "test"
+
+#====================================================================================================
+# SECURITY VARIABLES
+#====================================================================================================
+# @ui-group: Security
+# @ui-order: 3
+# @ui-description: Security credentials and access control
+
+# @ui-type: select
+# @ui-source: aws-keypairs
+# @ui-depends-on: aws_region
+# @ui-label: EC2 Key Pair
+# @ui-description: AWS EC2 keypair name for SSH access (must already exist in target region)
+# @ui-required: true
+# @ui-width: half
+# @ui-help: Select from available keypairs in the selected region. Use 'aws ec2 create-key-pair' to create a new one if needed.
+keypair = ""
+
+# @ui-type: text
+# @ui-label: FortiGate Admin Password
+# @ui-description: Password for FortiGate admin user (both instances in HA pair)
+# @ui-required: true
+# @ui-width: half
+# @ui-help: Password must be at least 8 characters. Used for HTTPS/SSH access to FortiGate instances.
+# @ui-placeholder: MySecurePassword123!
+fortigate_admin_password = ""
+
+#====================================================================================================
+# FORTIGATE HA CONFIGURATION
+#====================================================================================================
+# @ui-group: FortiGate HA Configuration
+# @ui-order: 4
+# @ui-description: High Availability pair settings
+
+# @ui-type: text
+# @ui-label: HA Group Name
+# @ui-description: FGCP HA cluster group name
+# @ui-required: true
+# @ui-width: half
+# @ui-default: ha-cluster
+# @ui-help: Used in FortiGate HA configuration. Both instances must use the same group name.
+# @ui-placeholder: ha-cluster
+ha_group_name = "ha-cluster"
+
+# @ui-type: text
+# @ui-label: HA Password
+# @ui-description: Password for HA heartbeat communication between FortiGates
+# @ui-required: true
+# @ui-width: half
+# @ui-help: Used to authenticate HA sync traffic between primary and secondary instances.
+# @ui-placeholder: MyHAPassword123!
+ha_password = ""
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: c5n.xlarge|c5n.xlarge (4 vCPU, 10.5 GB),c5n.2xlarge|c5n.2xlarge (8 vCPU, 21 GB),c5n.4xlarge|c5n.4xlarge (16 vCPU, 42 GB),c5n.9xlarge|c5n.9xlarge (36 vCPU, 96 GB)
+# @ui-label: FortiGate Instance Type
+# @ui-description: EC2 instance type for both FortiGate instances
+# @ui-required: true
+# @ui-width: half
+# @ui-default: c5n.xlarge
+# @ui-help: Must support 4 ENIs. c5n instances recommended for network performance.
+fortigate_instance_type = "c5n.xlarge"
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: 7.6.0|FortiOS 7.6.0,7.4.5|FortiOS 7.4.5,7.4.4|FortiOS 7.4.4,7.2.9|FortiOS 7.2.9
+# @ui-label: FortiOS Version
+# @ui-description: FortiOS version to deploy
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 7.4.5
+# @ui-help: Select FortiOS version. Licensing options depend on this version.
+fortios_version = "7.4.5"
+
+#====================================================================================================
+# LICENSING CONFIGURATION
+#====================================================================================================
+# @ui-group: Licensing
+# @ui-order: 5
+# @ui-description: FortiGate licensing mode and configuration
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: payg|Pay As You Go (PAYG),byol|Bring Your Own License (BYOL),fortiflex|FortiFlex Token
+# @ui-label: License Type
+# @ui-description: FortiGate licensing model
+# @ui-required: true
+# @ui-width: half
+# @ui-default: payg
+# @ui-help: PAYG: AWS Marketplace hourly billing. BYOL: Upload license files. FortiFlex: Token-based licensing.
+license_type = "payg"
+
+# @ui-type: text
+# @ui-label: Primary FortiGate License File
+# @ui-description: Path to license file for primary FortiGate instance
+# @ui-required: false
+# @ui-width: half
+# @ui-show-if: license_type == byol
+# @ui-help: Relative path to .lic file (e.g., ./licenses/license1.lic). Leave empty for PAYG/FortiFlex.
+# @ui-placeholder: ./licenses/fgt1.lic
+fgt_primary_license_file = ""
+
+# @ui-type: text
+# @ui-label: Secondary FortiGate License File
+# @ui-description: Path to license file for secondary FortiGate instance
+# @ui-required: false
+# @ui-width: half
+# @ui-show-if: license_type == byol
+# @ui-help: Relative path to .lic file (e.g., ./licenses/license2.lic). Leave empty for PAYG/FortiFlex.
+# @ui-placeholder: ./licenses/fgt2.lic
+fgt_secondary_license_file = ""
+
+# @ui-type: text
+# @ui-label: FortiFlex Token
+# @ui-description: FortiFlex configuration token
+# @ui-required: false
+# @ui-width: full
+# @ui-show-if: license_type == fortiflex
+# @ui-help: Enter your FortiFlex token for VM licensing. Get token from FortiCloud.
+# @ui-placeholder: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+fortiflex_token = ""
+
+#====================================================================================================
+# MANAGEMENT CONFIGURATION
+#====================================================================================================
+# @ui-group: Management Configuration
+# @ui-order: 6
+# @ui-description: Management interface and access settings
+
+# @ui-type: checkbox
+# @ui-label: Dedicated Management VPC
+# @ui-description: Use dedicated management VPC for FortiGate management interfaces
+# @ui-required: false
+# @ui-width: full
+# @ui-default: false
+# @ui-help: If enabled, port4 will be placed in management VPC. If disabled, port3 will be combined HA sync + management.
+# @ui-readonly: true
+enable_dedicated_management_vpc = false
+
+# @ui-type: checkbox
+# @ui-label: Dedicated Management ENI in Inspection VPC
+# @ui-description: Use dedicated management subnets within inspection VPC
+# @ui-required: false
+# @ui-width: full
+# @ui-default: false
+# @ui-help: If enabled, port4 will be placed in inspection VPC management subnets. Cannot be used with dedicated management VPC.
+# @ui-readonly: true
+enable_dedicated_management_eni = false
+
+# @ui-type: checkbox
+# @ui-label: Public IP on Management Interface
+# @ui-description: Associate Elastic IPs with management interfaces for internet access
+# @ui-required: false
+# @ui-width: full
+# @ui-default: true
+# @ui-help: Enable for internet-based management access. Disable if using Direct Connect/VPN to access via private IPs.
+enable_management_eip = true
+
+# @ui-type: text
+# @ui-label: FortiGate Management Access CIDRs
+# @ui-description: Comma-separated list of IP/CIDR blocks allowed to access FortiGate management interfaces
+# @ui-required: true
+# @ui-width: full
+# @ui-help: Controls security group access to FortiGate HTTPS/SSH management. Format: x.x.x.x/32 for single IP or x.x.x.0/24 for subnet.
+# @ui-placeholder: 1.2.3.4/32, 5.6.7.8/32
+fortigate_management_cidr = ""
+
+#====================================================================================================
+# FORTIMANAGER/FORTIANALYZER INTEGRATION
+#====================================================================================================
+# @ui-group: FortiManager/FortiAnalyzer
+# @ui-order: 7
+# @ui-description: Integration with FortiManager and FortiAnalyzer (if deployed in existing_vpc_resources)
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiManager
+# @ui-description: Register FortiGate HA pair with FortiManager
+# @ui-required: false
+# @ui-width: half
+# @ui-default: false
+# @ui-help: Automatically discovered from existing_vpc_resources deployment
+# @ui-readonly: true
+enable_fortimanager = false
+
+# @ui-type: text
+# @ui-label: FortiManager IP Address
+# @ui-description: Private IP address of FortiManager instance
+# @ui-required: false
+# @ui-width: half
+# @ui-help: Automatically discovered from existing_vpc_resources if FortiManager was deployed
+# @ui-readonly: true
+fortimanager_ip = ""
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiAnalyzer
+# @ui-description: Configure FortiGate HA pair to send logs to FortiAnalyzer
+# @ui-required: false
+# @ui-width: half
+# @ui-default: false
+# @ui-help: Automatically discovered from existing_vpc_resources deployment
+# @ui-readonly: true
+enable_fortianalyzer = false
+
+# @ui-type: text
+# @ui-label: FortiAnalyzer IP Address
+# @ui-description: Private IP address of FortiAnalyzer instance
+# @ui-required: false
+# @ui-width: half
+# @ui-help: Automatically discovered from existing_vpc_resources if FortiAnalyzer was deployed
+# @ui-readonly: true
+fortianalyzer_ip = ""
+
+#====================================================================================================
+# INTERNET ACCESS MODE
+#====================================================================================================
+# @ui-group: Internet Access
+# @ui-order: 8
+# @ui-description: Configure how FortiGate HA pair accesses the internet for egress traffic
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: eip|Elastic IP (EIP) - Distributed Egress,nat_gw|NAT Gateway - Centralized Egress
+# @ui-label: Internet Access Mode
+# @ui-description: Method for FortiGate internet egress
+# @ui-required: true
+# @ui-width: full
+# @ui-default: eip
+# @ui-help: EIP mode: Each FortiGate gets public IPs on untrusted interfaces. NAT Gateway mode: Use centralized NAT Gateway for egress.
+access_internet_mode = "eip"
+
+#====================================================================================================
+# TRANSIT GATEWAY INTEGRATION
+#====================================================================================================
+# @ui-group: Transit Gateway
+# @ui-order: 9
+# @ui-description: Transit Gateway integration for spoke VPC connectivity
+
+# @ui-type: checkbox
+# @ui-label: Enable Transit Gateway Attachment
+# @ui-description: Attach inspection VPC to Transit Gateway
+# @ui-required: false
+# @ui-width: full
+# @ui-default: false
+# @ui-help: Automatically determined from existing_vpc_resources deployment
+# @ui-readonly: true
+enable_tgw_attachment = false
+
+# @ui-type: text
+# @ui-label: Transit Gateway Name
+# @ui-description: Name of Transit Gateway to integrate with
+# @ui-required: false
+# @ui-width: half
+# @ui-help: Automatically discovered from existing_vpc_resources if TGW was deployed
+# @ui-readonly: true
+attach_to_tgw_name = ""
+
+# @ui-type: checkbox
+# @ui-label: Update TGW Routes
+# @ui-description: Update east/west spoke TGW route tables to point default traffic to inspection VPC
+# @ui-required: false
+# @ui-width: full
+# @ui-default: true
+# @ui-help: When enabled, updates the default routes in east and west TGW route tables to point to the inspection VPC. This allows spoke VPC traffic to flow through the FortiGate HA pair. Initially, these routes point to the management VPC for bootstrapping.
+# @ui-show-if: enable_tgw_attachment == true
+update_tgw_routes = true

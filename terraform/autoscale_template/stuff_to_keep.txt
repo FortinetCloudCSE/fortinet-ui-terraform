@@ -1,0 +1,92 @@
+resource "aws_route" "inspection-ns-private-default-route-gwlbe-az1" {
+  depends_on             = [module.vpc-inspection]
+  route_table_id         = module.vpc-inspection.route_table_private_az1_id
+  destination_cidr_block = "0.0.0.0/0"
+  vpc_endpoint_id        = data.aws_vpc_endpoint.asg_endpoint_az1.id
+}
+resource "aws_route" "inspection-ns-private-default-route-gwlbe-az2" {
+  depends_on             = [module.vpc-inspection]
+  route_table_id         = module.vpc-inspection.route_table_private_az2_id
+  destination_cidr_block = "0.0.0.0/0"
+  vpc_endpoint_id        = data.aws_vpc_endpoint.asg_endpoint_az2.id
+}
+
+#
+# Routes for the route table. If nat gateway is enabled, make the default route go to the nat gateway.
+# If not, make the default route go to the internet gateway.
+#
+resource "aws_route" "inspection-ns-public-default-route-ngw-az1" {
+  depends_on             = [module.vpc-inspection]
+  count                  = local.enable_nat_gateway ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_public_az1_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = module.vpc-inspection.aws_nat_gateway_vpc_az1_id
+}
+resource "aws_route" "inspection-ns-public-default-route-ngw-az2" {
+  depends_on             = [module.vpc-inspection]
+  count                  = local.enable_nat_gateway ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_public_az2_id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = module.vpc-inspection.aws_nat_gateway_vpc_az2_id
+}
+resource "aws_route" "inspection-ns-public-default-route-igw-az1" {
+  depends_on             = [module.vpc-inspection]
+  count                  = !local.enable_nat_gateway ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_public_az1_id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = module.vpc-inspection.igw_id
+}
+resource "aws_route" "inspection-ns-public-default-route-igw-az2" {
+  depends_on             = [module.vpc-inspection]
+  count                  = !local.enable_nat_gateway ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_public_az2_id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = module.vpc-inspection.igw_id
+}
+
+#
+# This is a bit bruce force. Route all the rfc-1918 space to the TGW. More specific route will handle the local traffic.
+#
+
+resource "aws_route" "gwlbe-192-route-igw-az1" {
+  depends_on             = [module.vpc-inspection, var.enable_tgw_attachment]
+  route_table_id         = module.vpc-inspection.route_table_gwlbe_az1_id
+  destination_cidr_block = local.rfc1918_192
+  transit_gateway_id     = module.vpc-transit-gateway[0].tgw_id
+}
+resource "aws_route" "gwlbe-192-route-igw-az2" {
+  depends_on             = [module.vpc-inspection]
+  count                 = var.enable_tgw_attachment ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_gwlbe_az2_id
+  destination_cidr_block = local.rfc1918_192
+  transit_gateway_id     = module.vpc-transit-gateway[0].tgw_id
+}
+resource "aws_route" "gwlbe-10-route-igw-az1" {
+  depends_on             = [module.vpc-inspection]
+  count                  = var.enable_tgw_attachment ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_gwlbe_az1_id
+  destination_cidr_block = local.rfc1918_10
+  transit_gateway_id     = module.vpc-transit-gateway[0].tgw_id
+}
+resource "aws_route" "gwlbe-10-route-igw-az2" {
+  depends_on             = [module.vpc-inspection]
+  count                 = var.enable_tgw_attachment ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_gwlbe_az2_id
+  destination_cidr_block = local.rfc1918_10
+  transit_gateway_id     = module.vpc-transit-gateway[0].tgw_id
+}
+resource "aws_route" "gwlbe-172-route-igw-az1" {
+  depends_on             = [module.vpc-inspection]
+  count                  = var.enable_tgw_attachment ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_gwlbe_az1_id
+  destination_cidr_block = local.rfc1918_172
+  transit_gateway_id     =module.vpc-transit-gateway[0].tgw_id
+}
+resource "aws_route" "gwlbe-172-route-igw-az2" {
+  depends_on             = [module.vpc-inspection]
+  count                  = var.enable_tgw_attachment ? 1 : 0
+  route_table_id         = module.vpc-inspection.route_table_gwlbe_az2_id
+  destination_cidr_block = local.rfc1918_172
+  transit_gateway_id     = module.vpc-transit-gateway[0].tgw_id
+}
+

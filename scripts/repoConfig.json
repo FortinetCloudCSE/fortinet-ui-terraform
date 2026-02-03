@@ -1,7 +1,7 @@
 {
-  "repoName":"UserRepo",
-  "author":"Jeff Kopko",
-  "workshopTitle":"Hugo for Fortinet TECWorkshops",
+  "repoName":"fortinet-ui-terraform",
+  "author":"Mike Wooten",
+  "workshopTitle":"Fortinet UI Terraform",
   "themeVariant":"Workshop",
   "logoBannerText":"FortiHugo",
   "logoBannerSubText":"",

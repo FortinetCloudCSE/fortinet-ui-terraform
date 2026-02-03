@@ -1,0 +1,42 @@
+Content-Type: multipart/mixed; boundary="===============0086047718136476635=="
+MIME-Version: 1.0
+
+--===============0086047718136476635==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="config"
+
+
+config system global
+%{ if faz_vm_name != "" }
+    set hostname "${faz_vm_name}"
+%{ endif }
+end
+
+config system admin setting
+    set idle_timeout 480
+end
+config system admin user
+    edit admin
+%{ if faz_admin_password != "" }
+    set password ${faz_admin_password}
+%{ endif }
+end
+config system interface
+    edit "port1"
+        set allowaccess ping https ssh ping
+    next
+end
+
+%{ if faz_license_file != "" }
+--===============0086047718136476635==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="${faz_license_file}"
+
+$file(${faz_license_file})
+
+%{ endif }
+--===============0086047718136476635==--

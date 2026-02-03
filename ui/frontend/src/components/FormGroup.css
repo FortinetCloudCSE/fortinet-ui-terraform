@@ -1,0 +1,53 @@
+.form-group {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.group-header {
+  border-bottom: 2px solid #000;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.group-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: #000;
+  font-size: 1.5rem;
+}
+
+.group-description {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.group-fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+/* Allow half-width fields to span 1 column */
+.field-half {
+  grid-column: span 1;
+}
+
+/* Force full-width fields to span 2 columns */
+.field-full {
+  grid-column: span 2;
+}
+
+/* On smaller screens, make all fields full width */
+@media (max-width: 768px) {
+  .group-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .field-half,
+  .field-full {
+    grid-column: span 1;
+  }
+}

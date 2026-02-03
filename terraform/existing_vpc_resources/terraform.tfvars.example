@@ -1,0 +1,1029 @@
+#====================================================================================================
+# REGION AND AVAILABILITY ZONES
+#====================================================================================================
+# @ui-group: Region and Availability Zones
+# @ui-order: 1
+# @ui-description: AWS region and availability zone selection
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: us-east-1|US East (N. Virginia),us-east-2|US East (Ohio),us-west-1|US West (N. California),us-west-2|US West (Oregon),eu-west-1|Europe (Ireland),eu-central-1|Europe (Frankfurt),ap-southeast-1|Asia Pacific (Singapore),ap-northeast-1|Asia Pacific (Tokyo)
+# @ui-label: AWS Region
+# @ui-description: AWS region where all resources will be deployed
+# @ui-required: true
+# @ui-width: full
+# @ui-default: us-west-1
+# @ui-help: Choose the AWS region closest to your users or that meets your compliance requirements
+aws_region          = "us-west-1"
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: a|Availability Zone A,b|Availability Zone B,c|Availability Zone C
+# @ui-label: Availability Zone 1
+# @ui-description: First availability zone (appended to region)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: a
+# @ui-help: Availability zones are specified as single letters (a, b, c, etc.) which will be appended to the region
+availability_zone_1 = "a"
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: a|Availability Zone A,b|Availability Zone B,c|Availability Zone C
+# @ui-label: Availability Zone 2
+# @ui-description: Second availability zone (appended to region)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: b
+# @ui-help: Must be different from Availability Zone 1. Example: us-west-2 + "a" = us-west-2a
+availability_zone_2 = "b"
+
+#====================================================================================================
+# RESOURCE IDENTIFICATION
+#====================================================================================================
+# @ui-group: Resource Identification
+# @ui-order: 2
+# @ui-description: Project and environment identifiers for resource naming
+
+# @ui-type: text
+# @ui-label: Customer Prefix
+# @ui-description: Identifier prepended to all resources (e.g., company/project name)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: acme
+# @ui-help: Format: "<cp>-<env>-<resource_name>". Example: "acme-test-management-vpc". IMPORTANT: Must match value in autoscale_template!
+# @ui-placeholder: acme
+cp  = "acme"
+
+# @ui-type: text
+# @ui-label: Environment
+# @ui-description: Environment identifier (prod, test, dev, staging, etc.)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: test
+# @ui-help: Used for resource naming and tagging. IMPORTANT: Must match value in autoscale_template!
+# @ui-placeholder: test
+env = "test"
+
+#====================================================================================================
+# SECURITY VARIABLES
+#====================================================================================================
+# @ui-group: Security
+# @ui-order: 4
+# @ui-description: Security credentials and access control
+
+# @ui-type: select
+# @ui-source: aws-keypairs
+# @ui-depends-on: aws_region
+# @ui-label: EC2 Key Pair
+# @ui-description: AWS EC2 keypair name for SSH access (must already exist in target region)
+# @ui-required: true
+# @ui-width: half
+# @ui-help: Select from available keypairs in the selected region. Use 'aws ec2 create-key-pair' to create a new one if needed.
+keypair = ""
+
+# @ui-type: text
+#====================================================================================================
+# INSPECTION VPC CONFIGURATION
+#====================================================================================================
+# @ui-group: Inspection VPC Configuration
+# @ui-order: 5
+# @ui-description: Inspection VPC and spoke VPC CIDR blocks
+
+# @ui-type: checkbox
+# @ui-label: AutoScale Deployment
+# @ui-description: Deploy FortiGate AutoScale group with Gateway Load Balancer
+# @ui-required: false
+# @ui-width: half
+# @ui-default: true
+# @ui-help: Creates GWLB subnets for AutoScale template. Mutually exclusive with HA Pair deployment.
+# @ui-exclusive-with: enable_ha_pair_deployment
+enable_autoscale_deployment = true
+
+# @ui-type: checkbox
+# @ui-label: HA Pair Deployment
+# @ui-description: Deploy FortiGate HA Pair with Active-Passive FGCP clustering
+# @ui-required: false
+# @ui-width: half
+# @ui-default: false
+# @ui-help: Creates HA sync subnets for HA Pair template. Mutually exclusive with AutoScale deployment.
+# @ui-exclusive-with: enable_autoscale_deployment
+enable_ha_pair_deployment = false
+
+# @ui-type: text
+# @ui-label: Inspection VPC CIDR
+# @ui-description: CIDR where FortiGate deployment resides
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 10.0.0.0/16
+# @ui-help: Ensure this does not overlap with management VPC or spoke VPCs
+# @ui-placeholder: 10.0.0.0/16
+vpc_cidr_inspection = "10.0.0.0/16"
+
+# Hidden field - required by Terraform but same as vpc_cidr_inspection
+vpc_cidr_ns_inspection = "10.0.0.0/16"
+
+# @ui-type: number
+# @ui-label: Subnet Bits
+# @ui-description: Number of bits for subnet CIDR calculation
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 8
+# @ui-help: Formula: <vpc_cidr>/<prefix + subnet_bits>. Example: 10.0.0.0/16 + 8 = /24 subnets. Recommended: 7 or 8
+subnet_bits = 8
+
+# @ui-type: text
+# @ui-label: Management Access CIDRs
+# @ui-description: Comma-separated list of IP/CIDR blocks allowed to access management VPC resources (FortiManager, FortiAnalyzer, Jump Box)
+# @ui-required: true
+# @ui-width: full
+# @ui-default: x.x.x.x/32
+# @ui-help: Controls security group access to FortiManager, FortiAnalyzer, and Jump Box instances in the management VPC (if enabled). Default includes your current public IP - required to access these resources from this environment. Format: x.x.x.x/32 for single IP or x.x.x.0/24 for subnet.
+# @ui-placeholder: 1.2.3.4/32, 5.6.7.8/32
+management_cidr_sg = "x.x.x.x/32"
+
+
+# @ui-type: output
+# @ui-label: AZ1 Public Subnet
+# @ui-description: Calculated public subnet CIDR for availability zone 1
+# @ui-width: half
+# @ui-help: This subnet will host public-facing resources in AZ1
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 0)
+inspection_az1_public_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ2 Public Subnet
+# @ui-description: Calculated public subnet CIDR for availability zone 2
+# @ui-width: half
+# @ui-help: This subnet will host public-facing resources in AZ2
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 1)
+inspection_az2_public_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ1 Private Subnet
+# @ui-description: Calculated private subnet CIDR for availability zone 1
+# @ui-width: half
+# @ui-help: This subnet will host FortiGate private interfaces in AZ1
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 2)
+inspection_az1_private_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ2 Private Subnet
+# @ui-description: Calculated private subnet CIDR for availability zone 2
+# @ui-width: half
+# @ui-help: This subnet will host FortiGate private interfaces in AZ2
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 3)
+inspection_az2_private_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ1 GWLB Subnet
+# @ui-description: Calculated GWLB endpoint subnet CIDR for availability zone 1
+# @ui-width: half
+# @ui-help: This subnet will host the GWLB endpoint in AZ1
+# @ui-show-if: enable_autoscale_deployment == true
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 4)
+inspection_az1_gwlb_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ2 GWLB Subnet
+# @ui-description: Calculated GWLB endpoint subnet CIDR for availability zone 2
+# @ui-width: half
+# @ui-help: This subnet will host the GWLB endpoint in AZ2
+# @ui-show-if: enable_autoscale_deployment == true
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 5)
+inspection_az2_gwlb_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ1 NAT Gateway Subnet
+# @ui-description: Calculated NAT Gateway subnet CIDR for availability zone 1
+# @ui-width: half
+# @ui-help: This subnet will host the NAT Gateway in AZ1 for centralized egress
+# @ui-show-if: create_nat_gateway_subnets == true
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 6)
+inspection_az1_nat_gw_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ2 NAT Gateway Subnet
+# @ui-description: Calculated NAT Gateway subnet CIDR for availability zone 2
+# @ui-width: half
+# @ui-help: This subnet will host the NAT Gateway in AZ2 for centralized egress
+# @ui-show-if: create_nat_gateway_subnets == true
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 7)
+inspection_az2_nat_gw_subnet = ""
+
+# @ui-type: checkbox
+# @ui-label: Management Subnet in Inspection VPC
+# @ui-description: Create management subnets within the inspection VPC
+# @ui-required: false
+# @ui-width: half
+# @ui-default: false
+# @ui-help: OPTION 1: Creates management subnets in the inspection VPC. Cannot be enabled if Management VPC is enabled
+# @ui-exclusive-with: enable_build_management_vpc
+create_management_subnet_in_inspection_vpc = false
+
+# @ui-type: checkbox
+# @ui-label: Create NAT Gateway Subnets
+# @ui-description: Create NAT Gateway subnets for centralized egress
+# @ui-required: false
+# @ui-width: half
+# @ui-default: false
+# @ui-help: Check to create NAT Gateway subnets for centralized internet egress with predictable source IPs (additional cost). Uncheck to use Elastic IPs per instance.
+create_nat_gateway_subnets = false
+
+# @ui-type: output
+# @ui-label: AZ1 Management Subnet
+# @ui-description: Calculated management subnet CIDR for availability zone 1
+# @ui-width: half
+# @ui-help: This subnet will host dedicated management interfaces in AZ1
+# @ui-show-if: create_management_subnet_in_inspection_vpc == true
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 8)
+inspection_az1_management_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ2 Management Subnet
+# @ui-description: Calculated management subnet CIDR for availability zone 2
+# @ui-width: half
+# @ui-help: This subnet will host dedicated management interfaces in AZ2
+# @ui-show-if: create_management_subnet_in_inspection_vpc == true
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 9)
+inspection_az2_management_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ1 HA Sync Subnet
+# @ui-description: Calculated HA sync subnet CIDR for availability zone 1
+# @ui-width: half
+# @ui-help: This subnet will host FortiGate HA pair heartbeat/sync interfaces in AZ1
+# @ui-show-if: enable_ha_pair_deployment == true
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 10)
+inspection_az1_ha_sync_subnet = ""
+
+# @ui-type: output
+# @ui-label: AZ2 HA Sync Subnet
+# @ui-description: Calculated HA sync subnet CIDR for availability zone 2
+# @ui-width: half
+# @ui-help: This subnet will host FortiGate HA pair heartbeat/sync interfaces in AZ2
+# @ui-show-if: enable_ha_pair_deployment == true
+# @ui-compute: cidrsubnet(vpc_cidr_inspection, subnet_bits, 11)
+inspection_az2_ha_sync_subnet = ""
+
+#====================================================================================================
+# SPOKE VPC CONFIGURATION
+#====================================================================================================
+# @ui-group: Spoke VPC Configuration
+# @ui-order: 7
+# @ui-description: East and West spoke VPC CIDR blocks for testing
+# @ui-show-if: enable_build_existing_subnets == true
+
+# @ui-type: text
+# @ui-label: West Spoke VPC CIDR
+# @ui-description: CIDR for West workload VPC (testing cross-VPC inspection)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 192.168.1.0/24
+# @ui-placeholder: 192.168.1.0/24
+vpc_cidr_west            = "192.168.1.0/24"
+
+# @ui-type: text
+# @ui-label: East Spoke VPC CIDR
+# @ui-description: CIDR for East workload VPC (testing traffic flows)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 192.168.0.0/24
+# @ui-placeholder: 192.168.0.0/24
+vpc_cidr_east            = "192.168.0.0/24"
+
+# @ui-type: number
+# @ui-label: Spoke Subnet Bits
+# @ui-description: Number of bits for spoke VPC subnets
+# @ui-required: true
+# @ui-width: full
+# @ui-default: 4
+# @ui-help: Creates smaller subnets in spoke VPCs (e.g., /28 subnets from /24 VPC)
+spoke_subnet_bits = 4
+
+# Hidden field - supernet CIDR encompassing all spoke VPCs
+vpc_cidr_spoke = "192.168.0.0/16"
+
+# @ui-type: output
+# @ui-label: West Public Subnet AZ1
+# @ui-description: Public subnet for Linux instance in West VPC AZ1
+# @ui-width: half
+# @ui-compute: cidrsubnet(vpc_cidr_west, spoke_subnet_bits, 0)
+# @ui-help: Subnet for workload instances
+west_public_subnet_az1 = ""
+
+# @ui-type: output
+# @ui-label: East Public Subnet AZ1
+# @ui-description: Public subnet for Linux instance in East VPC AZ1
+# @ui-width: half
+# @ui-compute: cidrsubnet(vpc_cidr_east, spoke_subnet_bits, 0)
+# @ui-help: Subnet for workload instances
+east_public_subnet_az1 = ""
+
+# @ui-type: output
+# @ui-label: West TGW Subnet AZ1
+# @ui-description: TGW attachment subnet in West VPC AZ1
+# @ui-width: half
+# @ui-compute: cidrsubnet(vpc_cidr_west, spoke_subnet_bits, 1)
+# @ui-help: Subnet for TGW ENI attachment
+west_tgw_subnet_az1 = ""
+
+# @ui-type: output
+# @ui-label: East TGW Subnet AZ1
+# @ui-description: TGW attachment subnet in East VPC AZ1
+# @ui-width: half
+# @ui-compute: cidrsubnet(vpc_cidr_east, spoke_subnet_bits, 1)
+# @ui-help: Subnet for TGW ENI attachment
+east_tgw_subnet_az1 = ""
+
+# @ui-type: output
+# @ui-label: West Public Subnet AZ2
+# @ui-description: Public subnet for Linux instance in West VPC AZ2
+# @ui-width: half
+# @ui-compute: cidrsubnet(vpc_cidr_west, spoke_subnet_bits, 2)
+# @ui-help: Subnet for workload instances
+west_public_subnet_az2 = ""
+
+# @ui-type: output
+# @ui-label: East Public Subnet AZ2
+# @ui-description: Public subnet for Linux instance in East VPC AZ2
+# @ui-width: half
+# @ui-compute: cidrsubnet(vpc_cidr_east, spoke_subnet_bits, 2)
+# @ui-help: Subnet for workload instances
+east_public_subnet_az2 = ""
+
+# @ui-type: output
+# @ui-label: West TGW Subnet AZ2
+# @ui-description: TGW attachment subnet in West VPC AZ2
+# @ui-width: half
+# @ui-compute: cidrsubnet(vpc_cidr_west, spoke_subnet_bits, 3)
+# @ui-help: Subnet for TGW ENI attachment
+west_tgw_subnet_az2 = ""
+
+# @ui-type: output
+# @ui-label: East TGW Subnet AZ2
+# @ui-description: TGW attachment subnet in East VPC AZ2
+# @ui-width: half
+# @ui-compute: cidrsubnet(vpc_cidr_east, spoke_subnet_bits, 3)
+# @ui-help: Subnet for TGW ENI attachment
+east_tgw_subnet_az2 = ""
+
+#====================================================================================================
+# MANAGEMENT VPC CONFIGURATION
+#====================================================================================================
+
+# @ui-group: Dedicated Management VPC Options
+# @ui-order: 8
+# @ui-description: Alternative to Management Subnet in Inspection VPC (OPTION 1 above). Create a separate VPC for management infrastructure. Leave unchecked if using OPTION 1 or external management
+# @ui-type: checkbox
+# @ui-label: Enable Dedicated Management VPC
+# @ui-description: Create a separate VPC for management (FortiManager, FortiAnalyzer, jump box)
+# @ui-required: false
+# @ui-width: full
+# @ui-default: true
+# @ui-help: OPTION 2: Creates a dedicated VPC for management infrastructure. Cannot be enabled if Management Subnet in Inspection VPC is enabled
+# @ui-exclusive-with: create_management_subnet_in_inspection_vpc
+enable_build_management_vpc = true
+
+# @ui-type: text
+# @ui-label: Management VPC CIDR
+# @ui-description: CIDR block for FortiManager, FortiAnalyzer, and jump box
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 10.3.0.0/16
+# @ui-help: Must not overlap with inspection VPC or spoke VPCs
+# @ui-placeholder: 10.3.0.0/16
+# @ui-show-if: enable_build_management_vpc == true
+vpc_cidr_management = "10.3.0.0/16"
+
+#====================================================================================================
+# TRANSIT GATEWAY INTEGRATION
+#====================================================================================================
+# @ui-group: Transit Gateway
+# @ui-order: 6
+# @ui-description: Transit Gateway configuration for VPC connectivity
+
+# @ui-type: checkbox
+# @ui-label: Create TGW and Spoke VPCs
+# @ui-description: Create Transit Gateway and spoke VPCs with this template
+# @ui-required: false
+# @ui-width: full
+# @ui-default: true
+# @ui-help: If enabled: Creates new TGW with spoke VPCs and test instances (full lab environment). If disabled: Allows specifying an existing Transit Gateway name to attach to (for production environments with existing workloads).
+enable_build_existing_subnets = true
+
+# @ui-type: checkbox
+# @ui-label: Enable TGW Attachment
+# @ui-description: Attach inspection VPC to Transit Gateway
+# @ui-required: false
+# @ui-width: half
+# @ui-default: true
+# @ui-help: Enable to attach inspection VPC to TGW (whether creating new or using existing). Disable if you don't want TGW connectivity
+enable_tgw_attachment = true
+
+# @ui-type: output
+# @ui-label: Transit Gateway Name
+# @ui-description: Name of the Transit Gateway that will be created
+# @ui-width: half
+# @ui-show-if: enable_build_existing_subnets == true
+# @ui-compute: template("${cp}-${env}-tgw")
+# @ui-help: Immutable - automatically generated from your customer prefix and environment
+tgw_name_created = ""
+
+# @ui-type: select
+# @ui-source: aws-transit-gateways
+# @ui-depends-on: aws_region
+# @ui-label: Transit Gateway Name
+# @ui-description: Name of your existing Transit Gateway to attach to
+# @ui-required: false
+# @ui-width: half
+# @ui-show-if: enable_build_existing_subnets == false
+# @ui-help: Select from available Transit Gateways in the selected region
+attach_to_tgw_name = "acme-test-tgw"
+
+# @ui-type: checkbox
+# @ui-label: Create TGW Routes (Lab Only)
+# @ui-description: Populate TGW route tables with routes between Management VPC and Spoke VPCs
+# @ui-required: false
+# @ui-width: full
+# @ui-default: false
+# @ui-show-if: enable_build_existing_subnets == true
+# @ui-help: Populates Transit Gateway route tables with routes for access to/from Management VPC to Spoke VPCs. Recommended for test environments only. Leave unchecked for production.
+create_tgw_routes_for_existing = false
+
+# @ui-type: checkbox
+# @ui-label: Management VPC TGW Attachment
+# @ui-description: Attach management VPC to Transit Gateway
+# @ui-required: false
+# @ui-width: full
+# @ui-default: false
+# @ui-show-if: enable_build_existing_subnets == true
+# @ui-help: Allows management VPC to reach spoke VPCs. Useful for testing but NOT recommended for production
+enable_management_tgw_attachment = false
+
+#====================================================================================================
+# FORTIMANAGER CONFIGURATION
+#====================================================================================================
+# @ui-group: FortiManager
+# @ui-order: 9
+# @ui-description: Centralized policy management and device orchestration
+# @ui-show-if: enable_build_management_vpc == true || create_management_subnet_in_inspection_vpc == true
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiManager
+# @ui-description: Deploy FortiManager instance in management VPC
+# @ui-required: false
+# @ui-width: full
+# @ui-default: false
+# @ui-help: FortiManager provides centralized policy management. Set to false if you have an existing instance
+enable_fortimanager = false
+
+# @ui-type: checkbox
+# @ui-label: Assign Public IP
+# @ui-description: Attach Elastic IP to FortiManager for internet access
+# @ui-required: false
+# @ui-width: full
+# @ui-default: true
+# @ui-help: Set to true for direct internet access, false if accessing via VPN/Direct Connect
+# @ui-show-if: enable_fortimanager == true
+enable_fortimanager_public_ip = true
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: m5.large|m5.large - 2vCPU 8GB,m5.xlarge|m5.xlarge - 4vCPU 16GB,m5.2xlarge|m5.2xlarge - 8vCPU 32GB,m5.4xlarge|m5.4xlarge - 16vCPU 64GB,m5.8xlarge|m5.8xlarge - 32vCPU 128GB
+# @ui-label: Instance Type
+# @ui-description: FortiManager EC2 instance type
+# @ui-required: true
+# @ui-width: half
+# @ui-default: m5.large
+# @ui-help: Larger instances for managing many devices or performance testing
+# @ui-show-if: enable_fortimanager == true
+fortimanager_instance_type = "m5.large"
+
+# @ui-type: text
+# @ui-label: OS Version
+# @ui-description: FortiManager OS version (e.g., 7.6)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 7.6
+# @ui-help: Use format "X.Y" for latest patch version. Check https://docs.fortinet.com/product/fortimanager/
+# @ui-placeholder: 7.6
+# @ui-show-if: enable_fortimanager == true
+fortimanager_os_version = "7.6"
+
+# @ui-type: number
+# @ui-label: Host IP (Last Octet)
+# @ui-description: Last octet of FortiManager private IP
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 14
+# @ui-help: Full IP will be: <vpc_cidr_management_base>.<host_ip>. Example: 10.3.0.14
+# @ui-show-if: enable_fortimanager == true
+fortimanager_host_ip = 14
+
+# @ui-type: select
+# @ui-source: license-files
+# @ui-label: License File
+# @ui-description: FortiManager BYOL license file (or leave empty for PAYG)
+# @ui-required: false
+# @ui-width: full
+# @ui-help: Select a license file from the template directory, or choose "(None - Use PAYG)" for on-demand licensing. IMPORTANT: Do NOT place in the same directory as FortiGate autoscale licenses.
+# @ui-show-if: enable_fortimanager == true
+# Full path to FortiManager BYOL license file
+# IMPORTANT: Do NOT place in the same directory as FortiGate autoscale licenses
+# The autoscale Lambda function will attempt to use any .lic files it finds
+# Leave empty ("") if using PAYG (on-demand) FortiManager from AWS Marketplace
+#
+fortimanager_license_file = "./licenses/fmgr_license.lic"
+
+# @ui-type: text
+# @ui-label: VM Hostname
+# @ui-description: Optional FortiManager hostname
+# @ui-required: false
+# @ui-width: half
+# @ui-help: Leave empty to use auto-generated name
+# @ui-placeholder: fmgr-hostname
+# @ui-show-if: enable_fortimanager == true
+fortimanager_vm_name = ""
+
+# @ui-type: password
+# @ui-label: Admin Password
+# @ui-description: FortiManager admin password (minimum 8 characters)
+# @ui-required: false
+# @ui-width: half
+# @ui-help: REQUIRED if deploying FortiManager. If left empty, you will not be able to login
+# @ui-placeholder: Enter password
+# @ui-show-if: enable_fortimanager == true
+fortimanager_admin_password = ""
+
+#====================================================================================================
+# FORTIANALYZER CONFIGURATION
+#====================================================================================================
+# @ui-group: FortiAnalyzer
+# @ui-order: 10
+# @ui-description: Centralized logging, reporting, and analytics
+# @ui-show-if: enable_build_management_vpc == true || create_management_subnet_in_inspection_vpc == true
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiAnalyzer
+# @ui-description: Deploy FortiAnalyzer instance in management VPC
+# @ui-required: false
+# @ui-width: full
+# @ui-default: false
+# @ui-help: FortiAnalyzer provides centralized logging and analytics. Set to false if you have an existing instance
+enable_fortianalyzer = false
+
+# @ui-type: checkbox
+# @ui-label: Assign Public IP
+# @ui-description: Attach Elastic IP to FortiAnalyzer for internet access
+# @ui-required: false
+# @ui-width: full
+# @ui-default: false
+# @ui-help: Set to true for direct internet access, false if accessing via VPN/Direct Connect
+# @ui-show-if: enable_fortianalyzer == true
+enable_fortianalyzer_public_ip = false
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: m5.large|m5.large - 2vCPU 8GB,m5.xlarge|m5.xlarge - 4vCPU 16GB,m5.2xlarge|m5.2xlarge - 8vCPU 32GB,m5.4xlarge|m5.4xlarge - 16vCPU 64GB,m5.8xlarge|m5.8xlarge - 32vCPU 128GB
+# @ui-label: Instance Type
+# @ui-description: FortiAnalyzer EC2 instance type
+# @ui-required: true
+# @ui-width: half
+# @ui-default: m5.large
+# @ui-help: Larger instances for high log volume or performance testing
+# @ui-show-if: enable_fortianalyzer == true
+fortianalyzer_instance_type = "m5.large"
+
+# @ui-type: text
+# @ui-label: OS Version
+# @ui-description: FortiAnalyzer OS version (e.g., 7.6)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 7.6
+# @ui-help: Should generally match FortiManager version for compatibility
+# @ui-placeholder: 7.6
+# @ui-show-if: enable_fortianalyzer == true
+fortianalyzer_os_version = "7.6"
+
+# @ui-type: number
+# @ui-label: Host IP (Last Octet)
+# @ui-description: Last octet of FortiAnalyzer private IP
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 13
+# @ui-help: Full IP will be: <vpc_cidr_management_base>.<host_ip>. Example: 10.3.0.13
+# @ui-show-if: enable_fortianalyzer == true
+fortianalyzer_host_ip = 13
+
+# @ui-type: select
+# @ui-source: license-files
+# @ui-label: License File
+# @ui-description: FortiAnalyzer BYOL license file (or leave empty for PAYG)
+# @ui-required: false
+# @ui-width: full
+# @ui-help: Select a license file from the template directory, or choose "(None - Use PAYG)" for on-demand licensing. IMPORTANT: Do NOT place in the same directory as FortiGate autoscale licenses.
+# @ui-show-if: enable_fortianalyzer == true
+# Full path to FortiAnalyzer BYOL license file
+# IMPORTANT: Do NOT place in the same directory as FortiGate autoscale licenses
+# Leave empty ("") if using PAYG (on-demand) FortiAnalyzer from AWS Marketplace
+#
+fortianalyzer_license_file = "./licenses/faz_license.lic"
+
+# @ui-type: text
+# @ui-label: VM Hostname
+# @ui-description: Optional FortiAnalyzer hostname
+# @ui-required: false
+# @ui-width: half
+# @ui-help: Leave empty to use auto-generated name
+# @ui-placeholder: faz-hostname
+# @ui-show-if: enable_fortianalyzer == true
+fortianalyzer_vm_name = ""
+
+# @ui-type: password
+# @ui-label: Admin Password
+# @ui-description: FortiAnalyzer admin password (minimum 8 characters)
+# @ui-required: false
+# @ui-width: half
+# @ui-help: REQUIRED if deploying FortiAnalyzer. If left empty, you will not be able to login
+# @ui-placeholder: Enter password
+# @ui-show-if: enable_fortianalyzer == true
+fortianalyzer_admin_password = ""
+
+#====================================================================================================
+# JUMP BOX CONFIGURATION
+#====================================================================================================
+# @ui-group: Jump Box
+# @ui-order: 11
+# @ui-description: Linux bastion host for SSH access and testing
+# @ui-show-if: enable_build_management_vpc == true || create_management_subnet_in_inspection_vpc == true
+
+# @ui-type: checkbox
+# @ui-label: Enable Jump Box
+# @ui-description: Deploy Linux jump box (bastion host) in management VPC
+# @ui-required: false
+# @ui-width: full
+# @ui-default: true
+# @ui-help: Useful for SSH access to private resources. Set to false if you have an existing bastion
+enable_jump_box = true
+
+# @ui-type: checkbox
+# @ui-label: Assign Public IP
+# @ui-description: Attach Elastic IP to jump box for internet access
+# @ui-required: false
+# @ui-width: full
+# @ui-default: true
+# @ui-show-if: enable_jump_box == true
+# @ui-help: Set to true for direct SSH access from internet, false if accessing via VPN/Direct Connect
+enable_jump_box_public_ip = true
+
+#====================================================================================================
+# LINUX INSTANCE CONFIGURATION (TRAFFIC GENERATORS)
+#====================================================================================================
+# @ui-group: Linux Instances
+# @ui-order: 12
+# @ui-description: Traffic generation instances in spoke VPCs
+# @ui-show-if: enable_build_existing_subnets == true
+
+# @ui-type: checkbox
+# @ui-label: Enable Linux Instances
+# @ui-description: Deploy Linux instances in spoke VPCs for testing
+# @ui-required: false
+# @ui-width: full
+# @ui-default: true
+# @ui-help: These instances run HTTP servers and can generate traffic. Set to false if you have existing spoke VPC resources
+enable_linux_spoke_instances = true
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: t2.micro|t2.micro - 1vCPU 1GB,t3.micro|t3.micro - 2vCPU 1GB,t3.small|t3.small - 2vCPU 2GB,t3.medium|t3.medium - 2vCPU 4GB,t3.large|t3.large - 2vCPU 8GB,c5.large|c5.large - 2vCPU 4GB,c5.xlarge|c5.xlarge - 4vCPU 8GB,c5.2xlarge|c5.2xlarge - 8vCPU 16GB
+# @ui-label: Instance Type
+# @ui-description: Linux instance type for traffic generators
+# @ui-required: true
+# @ui-width: half
+# @ui-show-if: enable_linux_spoke_instances == true
+# @ui-default: t2.micro
+# @ui-help: t2/t3 instances for basic testing. c5 instances (compute-optimized) for performance testing
+linux_instance_type = "t2.micro"
+
+# @ui-type: number
+# @ui-label: Host IP (Last Octet)
+# @ui-description: Last octet of Linux instance private IPs
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 11
+# @ui-show-if: enable_linux_spoke_instances == true
+# @ui-help: Full IPs will be: <vpc_cidr_east_base>.<host_ip> and <vpc_cidr_west_base>.<host_ip>. Example: 192.168.0.11
+linux_host_ip = 11
+
+# Hidden field - network access type (instances are behind TGW, no public access)
+acl = "private"
+
+#====================================================================================================
+# CONFIGURATION EXAMPLES AND USE CASES
+#====================================================================================================
+#
+# USE CASE 1: Complete Lab Environment
+# ------------------------------------
+# Full-featured lab with management VPC, Transit Gateway, spoke VPCs, and all optional components
+#
+# enable_build_management_vpc      = true
+# enable_fortimanager              = true
+# enable_fortianalyzer             = true
+# enable_jump_box                  = true
+# enable_management_tgw_attachment = true
+# enable_build_existing_subnets    = true
+# enable_linux_spoke_instances     = true
+#
+# USE CASE 2: Management VPC Only
+# --------------------------------
+# Create only management infrastructure without spoke VPCs or Transit Gateway
+#
+# enable_build_management_vpc      = true
+# enable_fortimanager              = true
+# enable_fortianalyzer             = true
+# enable_jump_box                  = false
+# enable_management_tgw_attachment = false
+# enable_build_existing_subnets    = false
+#
+# USE CASE 3: Traffic Generation Only
+# ------------------------------------
+# Create Transit Gateway and spoke VPCs for testing without management infrastructure
+#
+# enable_build_management_vpc      = false
+# enable_build_existing_subnets    = true
+# enable_linux_spoke_instances     = true
+#
+# USE CASE 4: Production Integration
+# -----------------------------------
+# Skip this template entirely and deploy only unified_template
+# Use existing production Transit Gateway, management VPC, and workloads
+#
+# (Do not deploy existing_vpc_resources template)
+#
+#====================================================================================================
+# IMPORTANT NOTES
+#====================================================================================================
+#
+# 1. CIDR PLANNING
+#    - Ensure all CIDRs do not overlap with existing networks
+#    - Management VPC, Inspection VPC, and Spoke VPCs must have non-overlapping CIDRs
+#    - Reserve CIDR space for future spoke VPC expansion
+#
+# 2. MATCHING VALUES WITH UNIFIED_TEMPLATE
+#    - cp and env MUST match between templates for resource discovery
+#    - attach_to_tgw_name MUST match between templates for TGW attachment
+#    - vpc_cidr_management MUST match if using dedicated management VPC integration
+#
+# 3. LICENSING REQUIREMENTS
+#    - FortiManager and FortiAnalyzer require BYOL licenses or use PAYG from AWS Marketplace
+#    - License files must be placed in specified paths before running terraform apply
+#    - Do NOT mix FortiManager/FortiAnalyzer licenses with FortiGate autoscale licenses
+#    - Leave license_file variables empty ("") if using PAYG instances
+#
+# 4. REQUIRED PASSWORDS
+#    - fortimanager_admin_password MUST be set if enable_fortimanager = true
+#    - fortianalyzer_admin_password MUST be set if enable_fortianalyzer = true
+#    - If passwords are left empty, you will NOT be able to login to the instances
+#    - Minimum password length: 8 characters
+#
+# 5. OPTIONAL VARIABLES
+#    - fortimanager_vm_name and fortimanager_admin_password can be left empty
+#    - fortianalyzer_vm_name and fortianalyzer_admin_password can be left empty
+#    - System will auto-generate names and use instance-id as default password
+#
+# 6. COST CONSIDERATIONS
+#    - FortiManager m5.xlarge: ~$0.10/hour (~$73/month)
+#    - FortiAnalyzer m5.xlarge: ~$0.10/hour (~$73/month)
+#    - Transit Gateway: $0.05/hour (~$36/month) + data processing charges
+#    - NAT Gateways: $0.045/hour per AZ + data processing charges
+#    - Destroy resources when not actively testing to minimize costs
+#
+# 7. SECURITY BEST PRACTICES
+#    - Always set management_cidr_sg to restrict access to your IP address only
+#    - Use private IPs (disable EIP) for production management resources
+#    - Implement least-privilege IAM policies for Terraform deployment
+#    - Enable VPC Flow Logs for network traffic monitoring
+#
+# 8. PRODUCTION CONSIDERATIONS
+#    - Do NOT enable enable_management_tgw_attachment in production
+#    - Consider deploying management VPC in separate AWS account
+#    - Use existing Transit Gateway instead of creating new one (set enable_build_existing_subnets = false)
+#    - Set enable_jump_box_public_ip = false for production (use VPN/Direct Connect)
+#
+#====================================================================================================
+
+#====================================================================================================
+# DISTRIBUTED EGRESS VPC CONFIGURATION (Optional)
+#====================================================================================================
+# @ui-group: Distributed VPCs
+# @ui-order: 13
+# @ui-description: Create distributed VPCs with GWLB endpoints for bump-in-the-wire inspection. Traffic hairpins through FortiGates and egresses via local IGW/NAT.
+
+# @ui-type: checkbox
+# @ui-label: Enable Distributed Egress VPCs
+# @ui-description: Create distributed egress VPCs with 3-tier subnet pattern (public, private, GWLBE)
+# @ui-help: These VPCs are NOT attached to Transit Gateway. Traffic flows: Instance -> GWLBE -> FortiGate (inspection) -> GWLBE -> IGW/NAT. Tagged with purpose=distributed_egress for discovery by autoscale_template.
+# @ui-required: false
+enable_distributed_egress_vpcs = false
+
+# @ui-type: select
+# @ui-label: Number of Distributed Egress VPCs
+# @ui-description: How many distributed egress VPCs to create
+# @ui-options: 1|1 VPC,2|2 VPCs,3|3 VPCs
+# @ui-required: false
+# @ui-default: 1
+# @ui-show-if: enable_distributed_egress_vpcs == true
+# @ui-width: half
+distributed_egress_vpc_count = 1
+
+# @ui-type: number
+# @ui-label: Distributed Egress Subnet Bits
+# @ui-description: Subnet mask bits for distributed egress VPC subnets
+# @ui-help: Default 4 creates /28 subnets from /24 VPC (16 addresses per subnet). Subnets: public-az1, public-az2, private-az1, private-az2, gwlbe-az1, gwlbe-az2.
+# @ui-required: false
+# @ui-width: half
+# @ui-show-if: enable_distributed_egress_vpcs == true
+# @ui-default: 4
+distributed_egress_subnet_bits = 4
+
+# @ui-type: text
+# @ui-label: Distributed Egress VPC 1 CIDR
+# @ui-description: CIDR block for distributed egress VPC 1
+# @ui-help: Auto-assigned based on next available CIDR after East/West spoke VPCs. Modify if needed.
+# @ui-required: false
+# @ui-width: half
+# @ui-show-if: enable_distributed_egress_vpcs == true
+# @ui-default: 192.168.2.0/24
+# @ui-placeholder: 192.168.2.0/24
+distributed_egress_vpc_1_cidr = "192.168.2.0/24"
+
+# @ui-type: text
+# @ui-label: Distributed Egress VPC 2 CIDR
+# @ui-description: CIDR block for distributed egress VPC 2
+# @ui-help: Auto-assigned based on next available CIDR after East/West spoke VPCs. Modify if needed.
+# @ui-required: false
+# @ui-width: half
+# @ui-show-if: enable_distributed_egress_vpcs == true && distributed_egress_vpc_count >= 2
+# @ui-default: 192.168.3.0/24
+# @ui-placeholder: 192.168.3.0/24
+distributed_egress_vpc_2_cidr = "192.168.3.0/24"
+
+# @ui-type: text
+# @ui-label: Distributed Egress VPC 3 CIDR
+# @ui-description: CIDR block for distributed egress VPC 3
+# @ui-help: Auto-assigned based on next available CIDR after East/West spoke VPCs. Modify if needed.
+# @ui-required: false
+# @ui-width: half
+# @ui-show-if: enable_distributed_egress_vpcs == true && distributed_egress_vpc_count >= 3
+# @ui-default: 192.168.4.0/24
+# @ui-placeholder: 192.168.4.0/24
+distributed_egress_vpc_3_cidr = "192.168.4.0/24"
+
+# @ui-type: checkbox
+# @ui-label: Enable Linux Instances
+# @ui-description: Deploy Linux instances in distributed VPCs for testing
+# @ui-required: false
+# @ui-show-if: enable_distributed_egress_vpcs == true
+# @ui-width: half
+# @ui-default: true
+# @ui-help: These instances can be used for traffic generation and testing inspection flows
+enable_distributed_linux_instances = true
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: t2.micro|t2.micro - 1vCPU 1GB,t3.micro|t3.micro - 2vCPU 1GB,t3.small|t3.small - 2vCPU 2GB,t3.medium|t3.medium - 2vCPU 4GB,t3.large|t3.large - 2vCPU 8GB,c5.large|c5.large - 2vCPU 4GB,c5.xlarge|c5.xlarge - 4vCPU 8GB,c5.2xlarge|c5.2xlarge - 8vCPU 16GB
+# @ui-label: Instance Type
+# @ui-description: Linux instance type for distributed VPCs
+# @ui-required: true
+# @ui-width: half
+# @ui-show-if: enable_distributed_egress_vpcs == true && enable_distributed_linux_instances == true
+# @ui-default: t3.micro
+# @ui-help: t2/t3 instances for basic testing. c5 instances (compute-optimized) for performance testing
+distributed_linux_instance_type = "t3.micro"
+
+# @ui-type: number
+# @ui-label: Host IP (Last Octet)
+# @ui-description: Last octet of Linux instance private IPs
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 11
+# @ui-placeholder: 11
+# @ui-show-if: enable_distributed_egress_vpcs == true && enable_distributed_linux_instances == true
+# @ui-help: Full IPs will be: <distributed_vpc_cidr_base>.<host_ip>. Example: 192.168.2.11
+distributed_linux_host_ip = 11
+
+# DISTRIBUTED VPC ARCHITECTURE:
+#
+# Each distributed egress VPC includes:
+#   - Public subnets (AZ1, AZ2): For NAT Gateway or direct internet egress
+#   - Private subnets (AZ1, AZ2): For workload instances
+#   - GWLBE subnets (AZ1, AZ2): For Gateway Load Balancer Endpoints
+#   - Internet Gateway: For public subnet internet access
+#   - Route tables: Configured for GWLBE traffic steering
+#   - Test instances: Ubuntu instances in private subnets for testing
+#
+# Traffic Flow:
+#   Instance (private) -> GWLBE -> FortiGate (inspection VPC) -> GWLBE -> IGW (egress)
+#
+# Tags Applied:
+#   - purpose = "distributed_egress" (for discovery by autoscale_template)
+#   - Name = "{cp}-{env}-distributed-{n}-vpc"
+#
+# NOTE: These VPCs are NOT attached to Transit Gateway
+#====================================================================================================
+
+#====================================================================================================
+# FORTITESTER CONFIGURATION (Optional)
+#====================================================================================================
+# @ui-group: FortiTester
+# @ui-order: 14
+# @ui-description: Deploy FortiTester appliances for professional performance and throughput testing. Each FortiTester spans both East and West VPCs with dual NICs for bidirectional traffic generation.
+# @ui-show-if: enable_build_existing_subnets == true
+# @ui-collapsible: true
+# @ui-collapsed-default: true
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiTester 1 (AZ1)
+# @ui-description: Deploy FortiTester with Port1 in East AZ1 and Port2 in West AZ1
+# @ui-required: false
+# @ui-width: half
+# @ui-default: false
+# @ui-help: FortiTester 1 spans East/West VPCs in AZ1. Port1 (192.168.0.6) generates traffic to Port2 (192.168.1.6) through the FortiGate inspection path. Requires BYOL license.
+enable_fortitester_1 = false
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiTester 2 (AZ2)
+# @ui-description: Deploy FortiTester with Port1 in West AZ2 and Port2 in East AZ2
+# @ui-required: false
+# @ui-width: half
+# @ui-default: false
+# @ui-help: FortiTester 2 spans West/East VPCs in AZ2. Port1 (192.168.1.6) generates traffic to Port2 (192.168.0.6) through the FortiGate inspection path. Requires BYOL license.
+enable_fortitester_2 = false
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: c5.large|c5.large - 2vCPU 4GB,c5.xlarge|c5.xlarge - 4vCPU 8GB,c5.2xlarge|c5.2xlarge - 8vCPU 16GB,c5.4xlarge|c5.4xlarge - 16vCPU 32GB,c5n.large|c5n.large - 2vCPU 5.25GB (Enhanced Network),c5n.xlarge|c5n.xlarge - 4vCPU 10.5GB (Enhanced Network),c5n.2xlarge|c5n.2xlarge - 8vCPU 21GB (Enhanced Network),c5n.4xlarge|c5n.4xlarge - 16vCPU 42GB (Enhanced Network)
+# @ui-label: Instance Type
+# @ui-description: FortiTester EC2 instance type
+# @ui-required: true
+# @ui-width: half
+# @ui-default: c5.xlarge
+# @ui-show-if: enable_fortitester_1 == true || enable_fortitester_2 == true
+# @ui-help: c5n instances recommended for high-throughput testing. Larger instances support more concurrent sessions and higher bandwidth.
+fortitester_instance_type = "c5.xlarge"
+
+# @ui-type: text
+# @ui-label: OS Version
+# @ui-description: FortiTester OS version (e.g., 7.6)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 7.6
+# @ui-show-if: enable_fortitester_1 == true || enable_fortitester_2 == true
+# @ui-help: Use format "X.Y" for latest patch version. Check https://docs.fortinet.com/product/fortitester/
+# @ui-placeholder: 7.6
+fortitester_os_version = "7.6"
+
+# @ui-type: number
+# @ui-label: Host IP (Last Octet)
+# @ui-description: Last octet of FortiTester private IPs (both Port1 and Port2)
+# @ui-required: true
+# @ui-width: half
+# @ui-default: 6
+# @ui-show-if: enable_fortitester_1 == true || enable_fortitester_2 == true
+# @ui-help: All FortiTester interfaces use this IP. Example with default: East=192.168.0.6, West=192.168.1.6. Ensure no conflict with Linux instances (default .11).
+fortitester_host_ip = 6
+
+# @ui-type: password
+# @ui-label: Admin Password
+# @ui-description: FortiTester admin password (minimum 8 characters)
+# @ui-required: false
+# @ui-width: half
+# @ui-show-if: enable_fortitester_1 == true || enable_fortitester_2 == true
+# @ui-help: If left empty, default password 'fortitester123' will be used. Change immediately after deployment.
+# @ui-placeholder: Enter password
+fortitester_admin_password = ""
+
+# FORTITESTER DEPLOYMENT ARCHITECTURE:
+#
+#   FortiTester 1 (AZ1):
+#     - Port1: East VPC AZ1 (192.168.0.6) - Management & Traffic Generator
+#     - Port2: West VPC AZ1 (192.168.1.6) - Traffic Receiver
+#     - Traffic: East -> TGW -> FortiGate -> TGW -> West
+#
+#   FortiTester 2 (AZ2):
+#     - Port1: West VPC AZ2 (192.168.1.6) - Management & Traffic Generator
+#     - Port2: East VPC AZ2 (192.168.0.6) - Traffic Receiver
+#     - Traffic: West -> TGW -> FortiGate -> TGW -> East
+#
+# INSTANCE SIZING:
+#   - c5.xlarge: Up to ~5 Gbps throughput
+#   - c5.2xlarge: Up to ~10 Gbps throughput
+#   - c5n.4xlarge: Up to ~25 Gbps throughput (enhanced networking)
+#
+# ACCESS:
+#   - FortiTesters are deployed in spoke VPCs (no public IP)
+#   - Access via jump box in management VPC
+#   - Default credentials: admin / <configured_password>
+#
+#====================================================================================================
