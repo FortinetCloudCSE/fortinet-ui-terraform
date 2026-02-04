@@ -137,7 +137,62 @@ react_fastapi/
 - **Python 3.11+** for backend
 - **Node.js 18+** for frontend
 - **uv** for Python package management: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- **AWS credentials** (optional - for resource discovery)
+- **AWS credentials** (required for resource discovery - see below)
+
+---
+
+## 🔐 AWS Credentials
+
+The UI needs AWS credentials to discover resources (regions, AZs, keypairs, VPCs, etc.).
+
+### Local Development
+
+Use the `aws_login.sh` script which handles both local CLI and UI authentication:
+
+```bash
+# Login with default profile (40netse) and local backend
+source ~/.local/bin/aws_login.sh
+
+# Login with specific profile
+source ~/.local/bin/aws_login.sh my-profile
+
+# Login with specific profile and remote backend URL
+source ~/.local/bin/aws_login.sh my-profile http://remote-host:8000
+```
+
+The script will:
+1. Perform AWS SSO login
+2. Export credentials to your local shell (for AWS CLI use)
+3. POST credentials to the UI backend (for UI use)
+
+### Remote/Container Deployments
+
+When the UI runs in a container (e.g., FortiManager, SASE environment), credentials can be:
+
+1. **Posted via the login script** - Run `aws_login.sh` locally with the remote backend URL
+2. **Posted via API** - Send credentials directly to the backend:
+
+```bash
+curl -X POST http://backend-host:8000/api/aws/credentials/set \
+  -H "Content-Type: application/json" \
+  -d '{
+    "access_key": "AKIAIOSFODNN7EXAMPLE",
+    "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+    "session_token": "optional-session-token"
+  }'
+```
+
+### Credential Status
+
+Check if credentials are valid:
+```bash
+curl http://localhost:8000/api/aws/credentials/status
+```
+
+Response includes:
+- `valid`: Whether credentials are working
+- `account`: AWS account ID
+- `source`: "session" (posted via API) or "environment/default" (from env vars)
 
 ---
 

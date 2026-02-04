@@ -448,7 +448,7 @@ Choose your deployment pattern and proceed to the appropriate template guide:
 
 1. **Lab/Test Environment**: Start with [existing_vpc_resources Template](../5_2_existing_vpc_resources/)
 2. **Production Deployment**: Go directly to [autoscale_template](../5_3_autoscale_template/)
-3. **Need to review components?**: See [Solution Components](../../4_solution_components/)
+3. **Need to review components?**: See [Solution Components](../../5_architecture/)
 4. **Need licensing guidance?**: See [Licensing Options](../../3_licensing/)
 
 ---

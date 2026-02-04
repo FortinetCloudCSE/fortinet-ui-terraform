@@ -154,7 +154,7 @@ aws ec2 search-transit-gateway-routes \
 - [existing_vpc_resources Template](../5_2_existing_vpc_resources/) - Required prerequisite
 - [autoscale_template](../5_3_autoscale_template/) - Alternative deployment mode
 - [Licensing Options](../../3_licensing/) - BYOL, PAYG, FortiFlex guidance
-- [Solution Components](../../4_solution_components/) - Deep dive into architecture
+- [Solution Components](../../5_architecture/) - Deep dive into architecture
 
 ### FortiGate HA Documentation
 
@@ -164,8 +164,8 @@ aws ec2 search-transit-gateway-routes \
 
 ### Terraform Documentation
 
-- [ha_pair README](https://github.com/FortinetCloudCSE/Autoscale-Simplified-Template/tree/main/terraform/ha_pair)
-- [Variables Reference](https://github.com/FortinetCloudCSE/Autoscale-Simplified-Template/blob/main/terraform/ha_pair/terraform.tfvars.example)
+- [ha_pair README](https://github.com/FortinetCloudCSE/fortinet-ui-terraform/tree/main/terraform/ha_pair)
+- [Variables Reference](https://github.com/FortinetCloudCSE/fortinet-ui-terraform/blob/main/terraform/ha_pair/terraform.tfvars.example)
 
 ---
 

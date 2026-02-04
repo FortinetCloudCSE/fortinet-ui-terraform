@@ -19,7 +19,7 @@ weight: 531
 ### Step 1: Navigate to Template Directory
 
 ```bash
-cd Autoscale-Simplified-Template/terraform/autoscale_template
+cd fortinet-ui-terraform/terraform/autoscale_template
 ```
 
 ### Step 2: Create terraform.tfvars
@@ -148,7 +148,7 @@ firewall_policy_mode = "2-arm"  # or "1-arm"
 - **2-arm**: Recommended for most deployments (better throughput)
 - **1-arm**: Use when simplified routing is required
 
-See [Firewall Architecture](../../4_solution_components/4_2_firewall_architecture/) for detailed comparison.
+See [Firewall Architecture](../../5_architecture/4_2_firewall_architecture/) for detailed comparison.
 
 #### Internet Egress Mode
 
@@ -160,7 +160,7 @@ access_internet_mode = "nat_gw"  # or "eip"
 - **nat_gw**: Production deployments (higher availability)
 - **eip**: Lower cost, simpler architecture
 
-See [Internet Egress](../../4_solution_components/4_1_internet_egress/) for detailed comparison.
+See [Internet Egress](../../5_architecture/4_1_internet_egress/) for detailed comparison.
 
 ### Step 7: Configure Management Options
 
@@ -188,7 +188,7 @@ dedicated_management_public_az1_subnet_tag = "my-custom-mgmt-az1-tag"
 dedicated_management_public_az2_subnet_tag = "my-custom-mgmt-az2-tag"
 ```
 
-See [Management Isolation](../../4_solution_components/4_3_management_isolation/) for options and recommendations.
+See [Management Isolation](../../5_architecture/4_3_management_isolation/) for options and recommendations.
 
 {{% notice info %}}
 **Automatic Implication**
@@ -312,7 +312,7 @@ asg_ondemand_asg_min_size = 0
 asg_ondemand_asg_max_size = 4
 ```
 
-See [Licensing Options](../../4_solution_components/4_4_licensing_options/) for detailed comparison and cost analysis.
+See [Licensing Options](../../5_architecture/4_4_licensing_options/) for detailed comparison and cost analysis.
 
 ### Step 9: Configure Autoscale Group Capacity
 
@@ -346,7 +346,7 @@ primary_scalein_protection = true
 - CloudWatch alarms trigger scale-out at 80% CPU (default)
 - Scale-in occurs at 30% CPU (default)
 
-See [Autoscale Group Capacity](../../4_solution_components/4_6_autoscale_group_capacity/) for detailed planning.
+See [Autoscale Group Capacity](../../5_architecture/4_6_autoscale_group_capacity/) for detailed planning.
 
 ### Step 10: Configure FortiGate Specifications
 
@@ -399,7 +399,7 @@ show system global | grep fgfm-allow-vm
 
 Without this configuration, FortiGate-VM instances will **fail to register** with FortiManager.
 
-See [FortiManager Integration](../../4_solution_components/4_5_fortimanager_integration/) for complete details.
+See [FortiManager Integration](../../5_architecture/4_5_fortimanager_integration/) for complete details.
 {{% /notice %}}
 
 **FortiManager integration behavior**:

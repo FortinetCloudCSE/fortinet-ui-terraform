@@ -1,10 +1,10 @@
 {
   "repoName":"fortinet-ui-terraform",
   "author":"Mike Wooten",
-  "workshopTitle":"Fortinet UI Terraform",
+  "workshopTitle":"FortiGate Terraform Web UI",
   "themeVariant":"Workshop",
-  "logoBannerText":"FortiHugo",
-  "logoBannerSubText":"",
+  "logoBannerText":"FortiGate Terraform UI",
+  "logoBannerSubText":"Simplified AWS Deployment",
   "errorLevel":"warning",
   "googleServicesID":"G-5RZBH288ST",
   "marketingCode": "FortiHugo202",

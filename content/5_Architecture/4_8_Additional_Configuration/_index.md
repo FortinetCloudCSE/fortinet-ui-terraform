@@ -185,4 +185,4 @@ Before proceeding to deployment, verify you've configured:
 
 ## Next Steps
 
-You're now ready to proceed to the [Summary](../4_9_summary/) page for a complete overview of all solution components, or jump directly to [Templates](../../5_templates/) to begin deployment.
+You're now ready to proceed to the [Summary](../4_9_summary/) page for a complete overview of all solution components, or jump directly to [Templates](../../6_templates/) to begin deployment.

@@ -16,17 +16,18 @@ This guide walks you through configuring the `existing_vpc_resources` template u
 
 ## Step 1: Select Template
 
-1. Open the UI at http://localhost:5173
+1. Open the UI at http://localhost:3000
 2. In the **Template** dropdown at the top, select **existing_vpc_resources**
 3. The form will load with default values
 
-**SCREENSHOT PLACEHOLDER: template-dropdown**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - template-dropdown**
+
 Show dropdown with three options:
 - existing_vpc_resources (selected)
 - autoscale_template
 - ha_pair
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -51,14 +52,15 @@ If AWS credentials are configured, the dropdown will show all available regions.
 6. **Availability Zone 2** dropdown updates automatically
 7. Select second AZ - **must be different from first** (e.g., `c`)
 
-**SCREENSHOT PLACEHOLDER: region-az-selection**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - region-az-selection**
+
 Show:
 - AWS Region dropdown with "us-west-2" selected
 - Availability Zone 1 dropdown with "a" selected
 - Availability Zone 2 dropdown with "c" selected
 - Visual indication that AZ2 cannot be same as AZ1
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -80,14 +82,15 @@ These values tag all resources for identification and **must match** between exi
    - Lowercase letters, numbers, and hyphens only
    - Will be included in resource names: `acme-test-vpc`
 
-**SCREENSHOT PLACEHOLDER: cp-env-fields**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - cp-env-fields**
+
 Show:
 - Customer Prefix field with "acme" entered
 - Environment field with "test" entered
 - Help text explaining naming convention
 - Example showing result: "acme-test-management-vpc"
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **Configuration Inheritance**
@@ -103,7 +106,7 @@ The UI automatically passes your `cp` and `env` values to autoscale_template and
 
 ### Option A: AutoScale Deployment Mode
 
-**Choose this if** you plan to deploy [autoscale_template](../5_3_autoscale_template/):
+**Choose this if** you plan to deploy [autoscale_template](../2_2_autoscale_template/):
 
 1. Check the box: **Enable AutoScale Deployment**
 2. Uncheck: **Enable HA Pair Deployment**
@@ -112,22 +115,23 @@ This creates GWLB subnets (indices 4 & 5) for Gateway Load Balancer endpoints.
 
 ### Option B: HA Pair Deployment Mode
 
-**Choose this if** you plan to deploy [ha_pair](../5_4_ha_pair/):
+**Choose this if** you plan to deploy [ha_pair](../2_3_ha_pair/):
 
 1. Check the box: **Enable HA Pair Deployment**
 2. Uncheck: **Enable AutoScale Deployment**
 
 This creates HA sync subnets (indices 10 & 11) for FGCP cluster synchronization.
 
-**SCREENSHOT PLACEHOLDER: deployment-mode-selection**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - deployment-mode-selection**
+
 Show:
 - Two checkboxes
 - Enable AutoScale Deployment [✓]
 - Enable HA Pair Deployment [ ]
 - Warning message: "These modes are mutually exclusive - choose one"
 - Help text explaining what each mode creates
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **What This Choice Does**
@@ -166,13 +170,14 @@ Check **Enable Build Existing Subnets** to create:
 
 **Enable this for complete lab environment** or if testing with spoke VPCs.
 
-**SCREENSHOT PLACEHOLDER: component-flags**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - component-flags**
+
 Show checkboxes for:
 [✓] Enable Build Management VPC
 [✓] Enable Build Existing Subnets
 With descriptions of what each creates
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -192,8 +197,9 @@ If you enabled Management VPC and want FortiManager:
 5. **Host IP** (last octet only, e.g., `10` becomes `10.3.0.10`)
 6. **License File** (optional) - Path to BYOL license file (leave empty for PAYG)
 
-**SCREENSHOT PLACEHOLDER: fortimanager-config**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - fortimanager-config**
+
 Show FortiManager section with:
 - Enable FortiManager checkbox [✓]
 - Instance Type dropdown: "m5.large" selected
@@ -201,7 +207,7 @@ Show FortiManager section with:
 - Admin Password field: [password masked]
 - Host IP field: "10"
 - License File field: empty (optional)
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **FortiManager Purpose**
@@ -223,10 +229,11 @@ If you enabled Management VPC and want FortiAnalyzer:
    - Host IP (e.g., `11` becomes `10.3.0.11`)
    - License File (optional)
 
-**SCREENSHOT PLACEHOLDER: fortianalyzer-config**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - fortianalyzer-config**
+
 Show FortiAnalyzer section similar to FortiManager
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **FortiAnalyzer Purpose**
@@ -259,12 +266,13 @@ This connects the management VPC to the Transit Gateway, allowing:
 - Jump box access to spoke VPC instances
 - FortiManager/FortiAnalyzer access via TGW
 
-**SCREENSHOT PLACEHOLDER: tgw-attachment**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - tgw-attachment**
+
 Show:
 - Enable Management VPC TGW Attachment checkbox
 - Diagram showing Management VPC → TGW → Spoke VPCs connection
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -333,8 +341,9 @@ If you enabled Spoke VPCs:
    - Must be within spoke supernet
    - Used for west workload VPC
 
-**SCREENSHOT PLACEHOLDER: cidr-configuration**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - cidr-configuration**
+
 Show:
 - Management VPC CIDR: "10.3.0.0/16"
 - Spoke Supernet: "192.168.0.0/16"
@@ -342,7 +351,7 @@ Show:
 - West VPC CIDR: "192.168.1.0/24"
 - Visual validation showing no overlaps
 - Diagram showing CIDR relationships
-```
+{{%/* /notice */%}}
 
 {{% notice tip %}}
 **CIDR Planning**
@@ -381,8 +390,9 @@ chmod 400 my-keypair.pem
    - Example: `203.0.113.10/32`, `10.0.0.0/8`
    - Find your IP: https://ifconfig.me
 
-**SCREENSHOT PLACEHOLDER: security-config**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - security-config**
+
 Show:
 - Key Pair dropdown with "my-keypair" selected
 - Management CIDR list field with:
@@ -390,7 +400,7 @@ Show:
   - "Add Item" button to add more CIDRs
 - Help text: "Restricts SSH and HTTPS access to management interfaces"
 - Button: "Get My IP" (auto-fills current public IP)
-```
+{{%/* /notice */%}}
 
 {{% notice warning %}}
 **Important: Management Access**
@@ -409,13 +419,14 @@ Before generating the terraform.tfvars file:
 
 This saves your settings so you can return later and resume editing.
 
-**SCREENSHOT PLACEHOLDER: save-button**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - save-button**
+
 Show:
 - "Save Configuration" button (blue)
 - "Reset to Defaults" button (gray)
 - Success message after saving
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -425,13 +436,14 @@ Show:
 2. A preview window appears showing the generated file contents
 3. Review the configuration
 
-**SCREENSHOT PLACEHOLDER: generated-preview**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - generated-preview**
+
 Show preview window with:
 - Generated terraform.tfvars content
 - Syntax highlighting
 - Buttons: "Download", "Save to Template", "Clear"
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -455,13 +467,14 @@ Choose how to use the generated file:
 2. Confirmation: "terraform.tfvars saved to: terraform/existing_vpc_resources/terraform.tfvars"
 3. Ready to deploy!
 
-**SCREENSHOT PLACEHOLDER: download-save-options**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - download-save-options**
+
 Show:
 - "Download" button
 - "Save to Template" button
 - Success message after saving
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -561,14 +574,15 @@ The UI provides real-time validation:
 - Availability zones must be different
 - Key pair must exist in selected region
 
-**SCREENSHOT PLACEHOLDER: validation-errors**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - validation-errors**
+
 Show form with validation errors:
 - Red border around empty required field
 - Error message: "This field is required"
 - CIDR overlap warning
 - AZ conflict warning
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -588,8 +602,8 @@ After deploying existing_vpc_resources:
    - `deployment_mode` - Verify correct mode was deployed
 
 3. **Continue to next template**:
-   - [Configure autoscale_template](6_2_autoscale_template/) (if you chose AutoScale mode)
-   - [Configure ha_pair](6_3_ha_pair/) (if you chose HA Pair mode)
+   - [Configure autoscale_template](../2_2_autoscale_template/) (if you chose AutoScale mode)
+   - [Configure ha_pair](../2_3_ha_pair/) (if you chose HA Pair mode)
 
 ---
 

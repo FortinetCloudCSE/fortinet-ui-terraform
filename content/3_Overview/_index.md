@@ -1,7 +1,7 @@
 ---
-title: "Overview"
+title: "Architecture Overview"
 menuTitle: "Overview"
-weight: 20
+weight: 30
 ---
 
 ## Introduction

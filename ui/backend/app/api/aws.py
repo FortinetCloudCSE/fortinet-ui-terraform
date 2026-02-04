@@ -1,6 +1,6 @@
 """AWS resource validation endpoints."""
 import logging
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel
 import boto3
@@ -9,6 +9,35 @@ import requests
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/aws", tags=["aws"])
+
+# In-memory credential storage for remote/container deployments
+# These take precedence over environment variables when set
+_session_credentials: dict = {}
+
+
+class AWSCredentials(BaseModel):
+    """AWS credentials for remote authentication."""
+    access_key: str
+    secret_key: str
+    session_token: Optional[str] = None
+
+
+def get_boto3_client(service: str, region_name: str = 'us-east-1'):
+    """
+    Get a boto3 client, using session credentials if available.
+
+    Falls back to default credential chain (env vars, instance profile, etc.)
+    if no session credentials are set.
+    """
+    if _session_credentials:
+        session = boto3.Session(
+            aws_access_key_id=_session_credentials.get('access_key'),
+            aws_secret_access_key=_session_credentials.get('secret_key'),
+            aws_session_token=_session_credentials.get('session_token'),
+            region_name=region_name
+        )
+        return session.client(service)
+    return boto3.client(service, region_name=region_name)
 
 
 class AWSRegion(BaseModel):
@@ -41,6 +70,59 @@ class VPC(BaseModel):
     state: str
 
 
+@router.post("/credentials/set")
+async def set_credentials(credentials: AWSCredentials):
+    """
+    Set AWS credentials for remote/container deployments.
+
+    Accepts credentials via POST and stores them in memory for use by
+    subsequent API calls. Useful when the UI runs in a container and
+    can't access local AWS CLI credentials.
+
+    The aws_login.sh script can POST credentials here after SSO login.
+    """
+    global _session_credentials
+
+    # Store credentials
+    _session_credentials = {
+        'access_key': credentials.access_key,
+        'secret_key': credentials.secret_key,
+        'session_token': credentials.session_token
+    }
+
+    # Validate immediately
+    try:
+        sts = get_boto3_client('sts')
+        identity = sts.get_caller_identity()
+
+        logger.info("AWS credentials set successfully for account %s", identity['Account'])
+        return {
+            "valid": True,
+            "account": identity['Account'],
+            "arn": identity['Arn'],
+            "message": "AWS credentials set successfully"
+        }
+    except Exception as e:
+        # Clear invalid credentials
+        _session_credentials.clear()
+        logger.error("Invalid AWS credentials provided: %s", str(e))
+        raise HTTPException(status_code=400, detail=f"Invalid credentials: {str(e)}")
+
+
+@router.delete("/credentials/clear")
+async def clear_credentials():
+    """
+    Clear stored AWS credentials.
+
+    After clearing, the API will fall back to default credential chain
+    (environment variables, instance profile, etc.)
+    """
+    global _session_credentials
+    _session_credentials.clear()
+    logger.info("AWS credentials cleared")
+    return {"message": "AWS credentials cleared"}
+
+
 @router.get("/credentials/status")
 async def check_credentials_status():
     """
@@ -50,14 +132,18 @@ async def check_credentials_status():
     """
     try:
         # Try to get caller identity to validate credentials
-        sts = boto3.client('sts')
+        sts = get_boto3_client('sts')
         identity = sts.get_caller_identity()
+
+        # Indicate source of credentials
+        source = "session" if _session_credentials else "environment/default"
 
         return {
             "valid": True,
             "account": identity['Account'],
             "arn": identity['Arn'],
             "user_id": identity['UserId'],
+            "source": source,
             "message": "AWS credentials are valid"
         }
     except NoCredentialsError:
@@ -88,7 +174,7 @@ async def list_regions():
     Returns a list of AWS regions with display names.
     """
     try:
-        ec2 = boto3.client('ec2', region_name='us-east-1')
+        ec2 = get_boto3_client('ec2', region_name='us-east-1')
         response = ec2.describe_regions(AllRegions=False)
 
         regions = [
@@ -134,7 +220,7 @@ async def list_availability_zones(region: str = Query(..., description="AWS regi
     Returns a list of availability zones in the specified region.
     """
     try:
-        ec2 = boto3.client('ec2', region_name=region)
+        ec2 = get_boto3_client('ec2', region_name=region)
         response = ec2.describe_availability_zones(
             Filters=[{'Name': 'state', 'Values': ['available']}]
         )
@@ -171,7 +257,7 @@ async def list_keypairs(region: str = Query(..., description="AWS region name"))
     Returns a list of EC2 key pairs in the specified region.
     """
     try:
-        ec2 = boto3.client('ec2', region_name=region)
+        ec2 = get_boto3_client('ec2', region_name=region)
         response = ec2.describe_key_pairs()
 
         keypairs = [
@@ -208,7 +294,7 @@ async def list_vpcs(region: str = Query(..., description="AWS region name")):
     Returns a list of VPCs in the specified region.
     """
     try:
-        ec2 = boto3.client('ec2', region_name=region)
+        ec2 = get_boto3_client('ec2', region_name=region)
         response = ec2.describe_vpcs()
 
         vpcs = []
@@ -254,7 +340,7 @@ async def list_transit_gateways(region: str = Query(..., description="AWS region
     Returns a list of Transit Gateways in the specified region.
     """
     try:
-        ec2 = boto3.client('ec2', region_name=region)
+        ec2 = get_boto3_client('ec2', region_name=region)
         response = ec2.describe_transit_gateways()
 
         tgws = []

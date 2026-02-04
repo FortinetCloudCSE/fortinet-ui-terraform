@@ -2,7 +2,7 @@
 title: "Licensing"
 chapter: false
 menuTitle: "Licensing"
-weight: 30
+weight: 40
 ---
 
 ## Overview

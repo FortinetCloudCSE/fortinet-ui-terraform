@@ -10,7 +10,7 @@ This guide walks you through configuring the `autoscale_template` using the Web 
 
 {{% notice warning %}}
 **Prerequisites:**
-1. Deploy [existing_vpc_resources](../5_2_existing_vpc_resources/) first with **AutoScale Deployment mode enabled**
+1. Deploy [existing_vpc_resources](../2_1_existing_vpc_resources/) first with **AutoScale Deployment mode enabled**
 2. Record the `cp`, `env`, and `tgw_name` values from existing_vpc_resources outputs
 {{% /notice %}}
 
@@ -18,14 +18,15 @@ This guide walks you through configuring the `autoscale_template` using the Web 
 
 ## Step 1: Select Template
 
-1. Open the UI at http://localhost:5173
+1. Open the UI at http://localhost:3000
 2. In the **Template** dropdown at the top, select **autoscale_template**
 3. The form will load with inherited values from existing_vpc_resources
 
-**SCREENSHOT PLACEHOLDER: template-dropdown-autoscale**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - template-dropdown-autoscale**
+
 Show dropdown with "autoscale_template" selected
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **Configuration Inheritance**
@@ -50,14 +51,15 @@ Review the inherited values (shown with gray background):
 These values must match existing_vpc_resources for proper resource discovery. If they're incorrect, fix them in existing_vpc_resources first.
 {{% /notice %}}
 
-**SCREENSHOT PLACEHOLDER: inherited-fields**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - inherited-fields**
+
 Show form fields with gray background indicating inherited values:
 - cp: "acme" (inherited)
 - env: "test" (inherited)
 - aws_region: "us-west-2" (inherited)
 - Note explaining these are read-only
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -77,12 +79,13 @@ Choose how FortiGate processes traffic:
 
 **Select:** `1-arm` or `2-arm` from dropdown
 
-**SCREENSHOT PLACEHOLDER: firewall-policy-mode**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - firewall-policy-mode**
+
 Show dropdown with options:
 - 1-arm - Single interface (hairpin)
 - 2-arm - Separate untrusted/trusted interfaces
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -106,13 +109,14 @@ Show dropdown with options:
    - Minimum 8 characters
    - Used to login to FortiGate instances
 
-**SCREENSHOT PLACEHOLDER: fortigate-config**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - fortigate-config**
+
 Show:
 - Instance Type dropdown: "c5n.xlarge" selected
 - FortiOS Version field: "7.4.5"
 - Admin Password field: [password masked]
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -134,14 +138,15 @@ Show:
 
 4. Check **Enable Scale-In Protection** to prevent automatic instance termination
 
-**SCREENSHOT PLACEHOLDER: autoscale-settings**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - autoscale-settings**
+
 Show:
 - Desired Capacity: 2
 - Minimum Size: 2
 - Maximum Size: 6
 - Scale-In Protection checkbox
-```
+{{%/* /notice */%}}
 
 {{% notice tip %}}
 **Autoscaling Recommendations**
@@ -180,13 +185,14 @@ Choose ONE licensing mode:
 2. Enter **FortiFlex Token**
 3. Lambda retrieves licenses from FortiFlex automatically
 
-**SCREENSHOT PLACEHOLDER: licensing**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - licensing**
+
 Show:
 - License Type dropdown with three options: payg, byol, fortiflex
 - FortiFlex Token field (visible when fortiflex selected)
 - Help text explaining each licensing mode
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -201,13 +207,14 @@ If you enabled Transit Gateway in existing_vpc_resources:
    - Example: `acme-test-tgw`
    - Find with: `terraform output tgw_name`
 
-**SCREENSHOT PLACEHOLDER: tgw-integration**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - tgw-integration**
+
 Show:
 - Enable TGW Attachment checkbox [✓]
 - Transit Gateway Name field: "acme-test-tgw"
 - Help text: "Use 'tgw_name' from existing_vpc_resources outputs"
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **TGW Routing**
@@ -228,13 +235,14 @@ If you want GWLB endpoints in distributed spoke VPCs:
 2. The template will discover VPCs tagged with your `cp` and `env` values
 3. GWLB endpoints will be created in discovered VPCs
 
-**SCREENSHOT PLACEHOLDER: distributed-inspection**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - distributed-inspection**
+
 Show:
 - Enable Distributed Inspection checkbox
 - Help text explaining bump-in-the-wire inspection
 - Diagram: VPC → GWLBe → GWLB → GENEVE → FortiGate
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **Distributed vs Centralized**
@@ -262,12 +270,13 @@ Choose how FortiGates access the internet:
 2. Centralized egress through NAT Gateways
 3. Requires NAT Gateways in inspection VPC
 
-**SCREENSHOT PLACEHOLDER: internet-access**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - internet-access**
+
 Show dropdown with options:
 - eip - Elastic IP per instance (distributed egress)
 - nat_gw - NAT Gateway (centralized egress)
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -294,13 +303,14 @@ Choose management access mode:
 3. Requires existing_vpc_resources with management VPC enabled
 4. Maximum security isolation
 
-**SCREENSHOT PLACEHOLDER: management-config**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - management-config**
+
 Show:
 - Enable Dedicated Management ENI checkbox
 - Enable Dedicated Management VPC checkbox
 - Help text explaining security isolation
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -315,14 +325,15 @@ If you deployed FortiManager in existing_vpc_resources:
 3. Enter **FortiManager Serial Number**
    - Login to FortiManager CLI: `get system status`
 
-**SCREENSHOT PLACEHOLDER: fortimanager-integration**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - fortimanager-integration**
+
 Show:
 - Enable FortiManager checkbox [✓]
 - FortiManager IP field: "10.3.0.10"
 - Serial Number field
 - Help text: "Get from existing_vpc_resources outputs"
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **FortiManager Registration**
@@ -344,12 +355,13 @@ If you deployed FortiAnalyzer in existing_vpc_resources:
    - Example: `10.3.0.11`
    - Find with: `terraform output fortianalyzer_private_ip`
 
-**SCREENSHOT PLACEHOLDER: fortianalyzer-integration**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - fortianalyzer-integration**
+
 Show:
 - Enable FortiAnalyzer checkbox [✓]
 - FortiAnalyzer IP field: "10.3.0.11"
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -365,12 +377,13 @@ Show:
    - Shows list of allowed IP ranges for SSH/HTTPS access
    - Cannot be modified here (inherited)
 
-**SCREENSHOT PLACEHOLDER: security-config-autoscale**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - security-config-autoscale**
+
 Show:
 - Key Pair dropdown: "my-keypair" (inherited)
 - Management CIDR list field: ["203.0.113.10/32"] (inherited, read-only)
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -379,10 +392,11 @@ Show:
 1. Click the **Save Configuration** button
 2. Confirmation: "Configuration saved successfully!"
 
-**SCREENSHOT PLACEHOLDER: save-autoscale**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - save-autoscale**
+
 Show Save Configuration button with success message
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -392,10 +406,11 @@ Show Save Configuration button with success message
 2. Review the generated configuration in preview window
 3. Verify all settings are correct
 
-**SCREENSHOT PLACEHOLDER: generated-preview-autoscale**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - generated-preview-autoscale**
+
 Show preview window with generated terraform.tfvars content
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -506,10 +521,11 @@ The UI validates:
 - Transit Gateway name format
 - All required fields filled
 
-**SCREENSHOT PLACEHOLDER: validation-errors-autoscale**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - validation-errors-autoscale**
+
 Show form with validation errors highlighted
-```
+{{%/* /notice */%}}
 
 ---
 
