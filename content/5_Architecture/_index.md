@@ -1,16 +1,20 @@
 ---
-title: "Solution Components"
+title: "Architecture Reference"
 chapter: true
-menuTitle: "Solution Components"
-weight: 40
+menuTitle: "Architecture"
+weight: 50
 ---
 
-The FortiGate deployment templates abstract complex architectural patterns into configurable components that can be enabled or customized through the `terraform.tfvars` file.
+The FortiGate deployment templates abstract complex architectural patterns into configurable components that can be enabled or customized through the Web UI or `terraform.tfvars` file.
 
 This section provides detailed explanations of each component, configuration options, and architectural considerations to help you design the optimal deployment for your requirements.
 
+{{% notice tip %}}
+**New to FortiGate AWS deployments?** Start with the [Getting Started](../2_getting_started/) guide to deploy your first environment using the Web UI. Return here for deeper architectural understanding.
+{{% /notice %}}
+
 {{% notice info %}}
-**Scope Note**: This section primarily covers components for the **autoscale_template**. For HA Pair-specific architecture and configuration, see the [ha_pair Template Guide](../5_templates/5_4_ha_pair/).
+**Scope Note**: This section primarily covers components for the **autoscale_template**. For HA Pair-specific architecture and configuration, see the [ha_pair Template Guide](../6_templates/5_4_ha_pair/).
 
 Many components documented here (Internet Egress, Firewall Architecture, Management Isolation, Licensing, FortiManager Integration) are also relevant to HA Pair deployments, but with different implementation details.
 {{% /notice %}}

@@ -10,7 +10,7 @@ This guide walks you through configuring the `ha_pair` template using the Web UI
 
 {{% notice warning %}}
 **Prerequisites:**
-1. Deploy [existing_vpc_resources](../5_2_existing_vpc_resources/) first with **HA Pair Deployment mode enabled**
+1. Deploy [existing_vpc_resources](../2_1_existing_vpc_resources/) first with **HA Pair Deployment mode enabled**
 2. Record the `cp`, `env`, and `tgw_name` values from existing_vpc_resources outputs
 {{% /notice %}}
 
@@ -18,14 +18,15 @@ This guide walks you through configuring the `ha_pair` template using the Web UI
 
 ## Step 1: Select Template
 
-1. Open the UI at http://localhost:5173
+1. Open the UI at http://localhost:3000
 2. In the **Template** dropdown at the top, select **ha_pair**
 3. The form will load with inherited values from existing_vpc_resources
 
-**SCREENSHOT PLACEHOLDER: template-dropdown-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - template-dropdown-ha**
+
 Show dropdown with "ha_pair" selected
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **Configuration Inheritance**
@@ -50,15 +51,16 @@ Review the inherited values (shown with gray background):
 These values must match existing_vpc_resources for proper resource discovery. If they're incorrect, fix them in existing_vpc_resources first.
 {{% /notice %}}
 
-**SCREENSHOT PLACEHOLDER: inherited-fields-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - inherited-fields-ha**
+
 Show form fields with gray background indicating inherited values:
 - cp: "acme" (inherited)
 - env: "test" (inherited)
 - aws_region: "us-west-2" (inherited)
 - availability_zone_1: "a" (inherited)
 - availability_zone_2: "c" (inherited)
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -88,13 +90,14 @@ For HA pairs, both instances are always running. Size for peak load, not average
    - Minimum 8 characters
    - Used to login to both FortiGate instances
 
-**SCREENSHOT PLACEHOLDER: fortigate-config-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - fortigate-config-ha**
+
 Show:
 - Instance Type dropdown: "c5n.xlarge" selected
 - FortiOS Version field: "7.4.5"
 - Admin Password field: [password masked]
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -113,13 +116,14 @@ Show:
    - Secures heartbeat communication between FortiGates
    - Keep this secure - compromised HA password allows cluster takeover
 
-**SCREENSHOT PLACEHOLDER: ha-config**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - ha-config**
+
 Show:
 - HA Group Name field: "ha-cluster"
 - HA Password field: [password masked]
 - Help text: "Used for secure heartbeat communication"
-```
+{{%/* /notice */%}}
 
 {{% notice warning %}}
 **HA Password Security**
@@ -154,14 +158,15 @@ Choose ONE licensing mode:
 2. Enter **FortiFlex Token**
 3. Both instances retrieve licenses using the same token
 
-**SCREENSHOT PLACEHOLDER: licensing-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - licensing-ha**
+
 Show:
 - License Type dropdown with three options: payg, byol, fortiflex
 - Primary License File field (visible when byol selected)
 - Secondary License File field (visible when byol selected)
 - FortiFlex Token field (visible when fortiflex selected)
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -183,14 +188,15 @@ If you enabled Transit Gateway in existing_vpc_resources:
    - Points default routes to inspection VPC
    - Enables traffic inspection through HA pair
 
-**SCREENSHOT PLACEHOLDER: tgw-integration-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - tgw-integration-ha**
+
 Show:
 - Enable Transit Gateway Attachment checkbox [✓]
 - Transit Gateway Name field: "acme-test-tgw"
 - Update TGW Routes checkbox [✓]
 - Help text explaining route updates
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **Automatic Route Updates**
@@ -220,12 +226,13 @@ Choose how FortiGates access the internet:
 3. Requires NAT Gateways in inspection VPC
 4. More predictable source IPs
 
-**SCREENSHOT PLACEHOLDER: internet-access-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - internet-access-ha**
+
 Show dropdown with options:
 - eip - Elastic IP per instance
 - nat_gw - NAT Gateway (centralized)
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -237,12 +244,13 @@ Show dropdown with options:
    - Allows direct internet access to FortiGate management
    - Uncheck if accessing via management VPC or VPN
 
-**SCREENSHOT PLACEHOLDER: management-eip**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - management-eip**
+
 Show:
 - Enable Management EIP checkbox
 - Help text: "Public IP for port3 (or port4) management access"
-```
+{{%/* /notice */%}}
 
 {{% notice tip %}}
 **Management Access Considerations**
@@ -262,12 +270,13 @@ If you deployed FortiManager in existing_vpc_resources:
    - Example: `10.3.0.10`
    - Find with: `terraform output fortimanager_private_ip`
 
-**SCREENSHOT PLACEHOLDER: fortimanager-integration-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - fortimanager-integration-ha**
+
 Show:
 - Enable FortiManager checkbox [✓]
 - FortiManager IP field: "10.3.0.10"
-```
+{{%/* /notice */%}}
 
 {{% notice info %}}
 **HA Pair and FortiManager**
@@ -290,12 +299,13 @@ If you deployed FortiAnalyzer in existing_vpc_resources:
    - Example: `10.3.0.11`
    - Find with: `terraform output fortianalyzer_private_ip`
 
-**SCREENSHOT PLACEHOLDER: fortianalyzer-integration-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - fortianalyzer-integration-ha**
+
 Show:
 - Enable FortiAnalyzer checkbox [✓]
 - FortiAnalyzer IP field: "10.3.0.11"
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -312,12 +322,13 @@ Show:
    - Controls access to management interfaces
    - Cannot be modified here (inherited)
 
-**SCREENSHOT PLACEHOLDER: security-config-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - security-config-ha**
+
 Show:
 - Key Pair dropdown: "my-keypair" (inherited)
 - Management CIDR list field: ["203.0.113.10/32"] (inherited, read-only)
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -326,10 +337,11 @@ Show:
 1. Click the **Save Configuration** button
 2. Confirmation: "Configuration saved successfully!"
 
-**SCREENSHOT PLACEHOLDER: save-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - save-ha**
+
 Show Save Configuration button with success message
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -339,10 +351,11 @@ Show Save Configuration button with success message
 2. Review the generated configuration in preview window
 3. Verify all settings are correct
 
-**SCREENSHOT PLACEHOLDER: generated-preview-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - generated-preview-ha**
+
 Show preview window with generated terraform.tfvars content
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -418,10 +431,11 @@ get system ha status
 #   State: Standby
 ```
 
-**SCREENSHOT PLACEHOLDER: ha-status-output**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - ha-status-output**
+
 Show example output of 'get system ha status' command
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -485,10 +499,11 @@ The UI validates:
 - License file paths (for BYOL)
 - All required fields filled
 
-**SCREENSHOT PLACEHOLDER: validation-errors-ha**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - validation-errors-ha**
+
 Show form with validation errors highlighted
-```
+{{%/* /notice */%}}
 
 ---
 
@@ -512,13 +527,14 @@ After successful deployment, test HA failover:
 
 **Failover time:** Typically 30-60 seconds
 
-**SCREENSHOT PLACEHOLDER: failover-test**
-```
+{{%/* notice note */%}}
+**TODO: Add diagram - failover-test**
+
 Show:
 - Command to trigger failover
 - Expected HA status after failover
 - Diagram showing EIP movement
-```
+{{%/* /notice */%}}
 
 ---
 

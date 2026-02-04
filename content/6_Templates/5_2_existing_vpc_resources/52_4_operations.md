@@ -299,7 +299,7 @@ Deploy [autoscale_template](../5_3_autoscale_template/) to create the FortiGate 
 
 **Recommended next reading**:
 - [autoscale_template Deployment Guide](../5_3_autoscale_template/)
-- [FortiManager Integration Configuration](../../4_solution_components/4_5_fortimanager_integration/)
+- [FortiManager Integration Configuration](../../5_architecture/4_5_fortimanager_integration/)
 - [Licensing Options](../../3_licensing/)
 
 ### For HA Pair Deployment
@@ -314,5 +314,5 @@ Deploy [ha_pair template](../5_4_ha_pair/) to create the FortiGate Active-Passiv
 
 **Recommended next reading**:
 - [ha_pair Template Deployment Guide](../5_4_ha_pair/)
-- [FGCP HA Configuration](../../4_solution_components/)
+- [FGCP HA Configuration](../../5_architecture/)
 - [Licensing Options](../../3_licensing/)

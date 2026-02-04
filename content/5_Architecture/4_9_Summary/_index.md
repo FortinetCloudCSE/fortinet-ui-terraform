@@ -239,7 +239,7 @@ primary_scalein_protection = true
 
 ## Next Steps
 
-**Proceed to [Templates](../../5_templates/)** for step-by-step deployment procedures.
+**Proceed to [Templates](../../6_templates/)** for step-by-step deployment procedures.
 
 ---
 

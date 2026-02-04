@@ -2,7 +2,7 @@
 
 A web-based application for generating and managing Terraform configurations for FortiGate deployments in AWS. The UI simplifies the complexity of configuring FortiGate autoscale groups and HA pairs by providing an intuitive form-based interface.
 
-**Workshop Documentation**: [fortinetcloudcse.github.io/Autoscale-Simplified-Template](https://fortinetcloudcse.github.io/Autoscale-Simplified-Template/)
+**Workshop Documentation**: [fortinetcloudcse.github.io/fortinet-ui-terraform](https://fortinetcloudcse.github.io/fortinet-ui-terraform/)
 
 ## Features
 
@@ -174,6 +174,6 @@ Validate deployments from `terraform/existing_vpc_resources/`:
 
 ## Documentation
 
-- **Workshop**: [fortinetcloudcse.github.io/Autoscale-Simplified-Template](https://fortinetcloudcse.github.io/Autoscale-Simplified-Template/)
+- **Workshop**: [fortinetcloudcse.github.io/fortinet-ui-terraform](https://fortinetcloudcse.github.io/fortinet-ui-terraform/)
 - **Fortinet Docs**: [docs.fortinet.com](https://docs.fortinet.com/)
 - **Upstream Module**: [terraform-aws-cloud-modules](https://github.com/fortinetdev/terraform-aws-cloud-modules)

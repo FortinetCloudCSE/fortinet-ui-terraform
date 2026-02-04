@@ -26,7 +26,7 @@ This repository contains the **FortiGate Autoscale Simplified Template** - a Ter
 The project includes:
 - Terraform templates for deploying FortiGate autoscale groups with AWS Gateway Load Balancer (GWLB)
 - Supporting infrastructure templates for testing and lab environments
-- Hugo-based documentation workshop hosted at https://fortinetcloudcse.github.io/Autoscale-Simplified-Template/
+- Hugo-based documentation workshop hosted at https://fortinetcloudcse.github.io/fortinet-ui-terraform/
 
 ## Repository Structure
 
@@ -115,7 +115,7 @@ Three main Terraform template directories exist under `terraform/`:
 ### Web UI Application
 
 Located in `ui/` directory:
-- **Backend**: Python Flask application (`ui/backend/`)
+- **Backend**: Python FastAPI application (`ui/backend/`)
   - `app/api/terraform.py` - Terraform configuration generation and validation
   - `app/api/aws.py` - AWS resource discovery (regions, AZs, keypairs, etc.)
   - Supports three templates: `existing_vpc_resources`, `autoscale_template`, `ha_pair`
@@ -124,6 +124,40 @@ Located in `ui/` directory:
   - `src/components/TerraformConfig.jsx` - Main configuration UI component
   - Template dropdown includes all three templates
   - Form groups with field validation and conditional visibility
+
+### AWS Credentials for UI
+
+The UI backend requires AWS credentials to discover resources. Two authentication methods are supported:
+
+**Method 1: Environment Variables (Local Development)**
+```bash
+# Use the aws_login.sh script which sets local env vars AND posts to UI backend
+source ~/.local/bin/aws_login.sh [profile] [backend_url]
+
+# Examples:
+source ~/.local/bin/aws_login.sh                              # Default profile, local backend
+source ~/.local/bin/aws_login.sh 40netse                      # Specific profile
+source ~/.local/bin/aws_login.sh 40netse http://remote:8000   # Remote backend
+```
+
+**Method 2: Session Credentials API (Remote/Container Deployments)**
+
+When the UI runs in a container (FortiManager, SASE environment), credentials can be posted via API:
+
+```bash
+# POST credentials to backend
+curl -X POST http://backend:8000/api/aws/credentials/set \
+  -H "Content-Type: application/json" \
+  -d '{"access_key": "AKIA...", "secret_key": "...", "session_token": "..."}'
+
+# Check credential status
+curl http://backend:8000/api/aws/credentials/status
+
+# Clear credentials (fall back to env vars)
+curl -X DELETE http://backend:8000/api/aws/credentials/clear
+```
+
+The `aws_login.sh` script automatically handles both methods - it exports credentials locally for CLI use and POSTs them to the backend for UI use.
 
 ### Documentation
 
@@ -589,8 +623,41 @@ Estimated monthly costs for full lab deployment:
 
 Always `terraform destroy` test environments when not in use to minimize costs.
 
+## Future Work / TODO
+
+### Container Deployment Path Resolution
+
+**Status:** Not yet implemented
+
+The UI backend (`ui/backend/app/api/terraform.py`) currently locates terraform templates using a path relative to the code location:
+
+```python
+def get_terraform_dir() -> Path:
+    return Path(__file__).parent.parent.parent.parent.parent / "terraform"
+```
+
+This works for local development but **will break in container deployments** (SASE environment, FortiManager container) where the terraform templates may be mounted at a different location.
+
+**Required fix:** Update `get_terraform_dir()` to support an environment variable with fallback:
+
+```python
+import os
+from pathlib import Path
+
+def get_terraform_dir() -> Path:
+    """Get path to terraform directory."""
+    # Check for environment variable first (for container deployments)
+    if terraform_path := os.environ.get("TERRAFORM_TEMPLATES_DIR"):
+        return Path(terraform_path)
+
+    # Fall back to relative path for local development
+    return Path(__file__).parent.parent.parent.parent.parent / "terraform"
+```
+
+**Container deployment:** Set `TERRAFORM_TEMPLATES_DIR=/path/to/templates` in the container environment.
+
 ## External References
 
 - Upstream module: https://github.com/fortinetdev/terraform-aws-cloud-modules
 - FortiGate documentation: https://docs.fortinet.com/
-- Workshop site: https://fortinetcloudcse.github.io/Autoscale-Simplified-Template/
+- Workshop site: https://fortinetcloudcse.github.io/fortinet-ui-terraform/

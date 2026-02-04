@@ -33,7 +33,7 @@ terraform output
 
 ### Pre-Deployment
 
-1. **Plan capacity thoroughly**: Use [Autoscale Group Capacity](../../4_solution_components/4_6_autoscale_group_capacity/) guidance
+1. **Plan capacity thoroughly**: Use [Autoscale Group Capacity](../../5_architecture/4_6_autoscale_group_capacity/) guidance
 2. **Test in dev/test first**: Validate configuration before production
 3. **Document customizations**: Maintain runbook of configuration decisions
 4. **Review security groups**: Ensure least-privilege access
@@ -147,9 +147,9 @@ The autoscale_template is the core component of the FortiGate Autoscale Simplifi
 ✅ **Production-ready**: High availability, autoscaling, lifecycle management
 
 **Next Steps**:
-- Review [Solution Components](../../4_solution_components/) for configuration options
+- Review [Solution Components](../../5_architecture/) for configuration options
 - See [Licensing Options](../../3_licensing/) for cost optimization
-- Check [FortiManager Integration](../../4_solution_components/4_5_fortimanager_integration/) for centralized management
+- Check [FortiManager Integration](../../5_architecture/4_5_fortimanager_integration/) for centralized management
 
 ---
 
