@@ -192,9 +192,9 @@ If you enabled Transit Gateway in existing_vpc_resources:
 **TODO: Add diagram - tgw-integration-ha**
 
 Show:
-- Enable Transit Gateway Attachment checkbox [✓]
+- Enable Transit Gateway Attachment checkbox [[x]]
 - Transit Gateway Name field: "acme-test-tgw"
-- Update TGW Routes checkbox [✓]
+- Update TGW Routes checkbox [[x]]
 - Help text explaining route updates
 {{%/* /notice */%}}
 
@@ -204,7 +204,7 @@ Show:
 When enabled, the template:
 - Deletes old default routes pointing to management VPC
 - Creates new default routes pointing to inspection VPC
-- Traffic flows: Spoke VPC → TGW → Primary FortiGate → Internet
+- Traffic flows: Spoke VPC --> TGW --> Primary FortiGate --> Internet
 {{% /notice %}}
 
 ---
@@ -274,7 +274,7 @@ If you deployed FortiManager in existing_vpc_resources:
 **TODO: Add diagram - fortimanager-integration-ha**
 
 Show:
-- Enable FortiManager checkbox [✓]
+- Enable FortiManager checkbox [[x]]
 - FortiManager IP field: "10.3.0.10"
 {{%/* /notice */%}}
 
@@ -303,7 +303,7 @@ If you deployed FortiAnalyzer in existing_vpc_resources:
 **TODO: Add diagram - fortianalyzer-integration-ha**
 
 Show:
-- Enable FortiAnalyzer checkbox [✓]
+- Enable FortiAnalyzer checkbox [[x]]
 - FortiAnalyzer IP field: "10.3.0.11"
 {{%/* /notice */%}}
 
@@ -445,10 +445,10 @@ Show example output of 'get system ha status' command
 
 ```
 License Type: payg
-✓ Enable Transit Gateway Attachment
-✓ Update TGW Routes
-✓ Enable Management EIP
-✗ Enable FortiManager
+[x] Enable Transit Gateway Attachment
+[x] Update TGW Routes
+[x] Enable Management EIP
+[ ] Enable FortiManager
 Access Internet Mode: eip
 ```
 
@@ -460,11 +460,11 @@ Access Internet Mode: eip
 
 ```
 License Type: byol
-✓ Enable Transit Gateway Attachment
-✓ Update TGW Routes
-✗ Enable Management EIP (access via management VPC)
-✓ Enable FortiManager
-✓ Enable FortiAnalyzer
+[x] Enable Transit Gateway Attachment
+[x] Update TGW Routes
+[ ] Enable Management EIP (access via management VPC)
+[x] Enable FortiManager
+[x] Enable FortiAnalyzer
 Access Internet Mode: eip
 ```
 
@@ -476,10 +476,10 @@ Access Internet Mode: eip
 
 ```
 License Type: payg
-✓ Enable Transit Gateway Attachment
-✓ Update TGW Routes
-✓ Enable Management EIP
-✗ Enable FortiManager
+[x] Enable Transit Gateway Attachment
+[x] Update TGW Routes
+[x] Enable Management EIP
+[ ] Enable FortiManager
 Access Internet Mode: nat_gw
 ```
 

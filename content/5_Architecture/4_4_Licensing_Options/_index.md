@@ -46,12 +46,12 @@ Place BYOL license files in the directory specified by `asg_license_directory`:
 
 ```
 terraform/autoscale_template/
-├── terraform.tfvars
-├── asg_license/
-│   ├── FGVM01-001.lic
-│   ├── FGVM01-002.lic
-│   ├── FGVM01-003.lic
-│   └── FGVM01-004.lic
+|---- terraform.tfvars
+|---- asg_license/
+|   |---- FGVM01-001.lic
+|   |---- FGVM01-002.lic
+|   |---- FGVM01-003.lic
+|   \---- FGVM01-004.lic
 ```
 
 ### Automated License Assignment
@@ -79,10 +79,10 @@ Ensure your license directory contains **at minimum** licenses equal to `asg_byo
 {{% /notice %}}
 
 ### Characteristics
-- ✅ **Lowest total cost**: Best value for long-term (12+ months)
-- ✅ **Predictable costs**: Fixed licensing regardless of usage
-- ⚠️ **License management**: Requires managing physical files
-- ⚠️ **Upfront investment**: Must purchase licenses in advance
+- **Lowest total cost**: Best value for long-term (12+ months)
+- **Predictable costs**: Fixed licensing regardless of usage
+- **License management**: Requires managing physical files
+- **Upfront investment**: Must purchase licenses in advance
 
 ### When to Use
 - Long-term production (12+ months)
@@ -184,11 +184,11 @@ Never commit FortiFlex credentials to version control. Use:
 - Verify configurations use expected CPU counts
 
 ### Characteristics
-- ✅ **Flexible consumption**: Pay only for what you use
-- ✅ **No license file management**: API-driven automation
-- ✅ **Lower cost than PAYG**: Typically 20-40% less
-- ⚠️ **Point-based**: Requires monitoring consumption
-- ⚠️ **API credentials**: Additional security considerations
+- **Flexible consumption**: Pay only for what you use
+- **No license file management**: API-driven automation
+- **Lower cost than PAYG**: Typically 20-40% less
+- **Point-based**: Requires monitoring consumption
+- **API credentials**: Additional security considerations
 
 ### When to Use
 - Variable workloads with unpredictable scaling
@@ -219,10 +219,10 @@ asg_ondemand_asg_desired_size = 0
 4. Hourly licensing cost added to EC2 charge
 
 ### Characteristics
-- ✅ **Simplest option**: Zero license management
-- ✅ **No upfront commitment**: Pay per running hour
-- ✅ **Instant availability**: No license pool constraints
-- ⚠️ **Highest hourly cost**: Premium pricing for convenience
+- **Simplest option**: Zero license management
+- **No upfront commitment**: Pay per running hour
+- **Instant availability**: No license pool constraints
+- **Highest hourly cost**: Premium pricing for convenience
 
 ### When to Use
 - Proof-of-concept and evaluation
@@ -303,22 +303,22 @@ asg_ondemand_asg_max_size = 8
 
 ```
 1. Expected deployment duration?
-   ├─ < 3 months → PAYG
-   ├─ 3-12 months → FortiFlex or evaluate costs
-   └─ > 12 months → BYOL + PAYG burst
+   |--- < 3 months --> PAYG
+   |--- 3-12 months --> FortiFlex or evaluate costs
+   \--- > 12 months --> BYOL + PAYG burst
 
 2. Workload predictable?
-   ├─ Yes, stable → BYOL
-   └─ No, variable → FortiFlex or Hybrid
+   |--- Yes, stable --> BYOL
+   \--- No, variable --> FortiFlex or Hybrid
 
 3. Want to manage license files?
-   ├─ No → FortiFlex or PAYG
-   └─ Yes, for cost savings → BYOL
+   |--- No --> FortiFlex or PAYG
+   \--- Yes, for cost savings --> BYOL
 
 4. Tolerance for complexity?
-   ├─ Low → PAYG
-   ├─ Medium → FortiFlex
-   └─ High (cost focus) → BYOL
+   |--- Low --> PAYG
+   |--- Medium --> FortiFlex
+   \--- High (cost focus) --> BYOL
 ```
 
 ---

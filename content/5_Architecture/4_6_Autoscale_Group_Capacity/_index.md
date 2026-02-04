@@ -58,7 +58,7 @@ asg_ondemand_asg_desired_size = 0
 **Scaling behavior**:
 1. Normal operations: 2 BYOL instances handle traffic
 2. Traffic increases: BYOL ASG scales up to 4 instances
-3. Traffic continues increasing: PAYG ASG scales from 0 → 6 instances
+3. Traffic continues increasing: PAYG ASG scales from 0 --> 6 instances
 4. Traffic decreases: PAYG ASG scales down to 0, then BYOL ASG scales down to 2
 
 ### Strategy 2: All PAYG (Simplest)
@@ -124,12 +124,12 @@ scale_in_threshold  = 20  # Lower threshold = more aggressive cost optimization
 
 ## Capacity Planning Calculator
 
-**Formula**: `Capacity Needed = (Peak Gbps Throughput) / (Per-Instance Gbps) × 1.2`
+**Formula**: `Capacity Needed = (Peak Gbps Throughput) / (Per-Instance Gbps) x 1.2`
 
 **Example**: 
 - Peak throughput requirement: 8 Gbps
 - c6i.xlarge (4 vCPU) with IPS enabled: ~2 Gbps per instance
-- Calculation: 8 / 2 × 1.2 = 4.8 → round up to **5 instances**
+- Calculation: 8 / 2 x 1.2 = 4.8 --> round up to **5 instances**
 - Set `max_size = 5` or higher for safety margin
 
 ---

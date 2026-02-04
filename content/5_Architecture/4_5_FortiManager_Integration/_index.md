@@ -41,7 +41,7 @@ When `enable_fortimanager_integration = true`:
 2. **Primary instance registration**: Only the primary FortiGate instance registers with FortiManager
 3. **VDOM exception configured**: Lambda adds `config system vdom-exception` to prevent central-management config from syncing to secondaries
 4. **Configuration synchronization**: Primary instance syncs configuration to secondary instances via FortiGate-native HA sync
-5. **Policy deployment**: Policies deployed from FortiManager propagate through primary → secondary sync
+5. **Policy deployment**: Policies deployed from FortiManager propagate through primary --> secondary sync
 
 ---
 
@@ -73,7 +73,7 @@ end
 
 ## Network Connectivity Requirements
 
-**FortiGate → FortiManager**:
+**FortiGate --> FortiManager**:
 - **TCP 541**: FortiManager to FortiGate communication (FGFM protocol)
 - **TCP 514** (optional): Syslog if logging to FortiManager
 - **HTTPS 443**: FortiManager GUI access for administrators
@@ -175,7 +175,7 @@ show system global | grep fgfm-allow-vm
 1. **Pre-configure FortiManager**: Create ADOMs, device groups, and policy packages before deploying autoscale group
 2. **Test in non-production**: Validate FortiManager integration in dev/test environment first
 3. **Monitor device status**: Set up FortiManager alerts for device disconnections
-4. **Document policy workflow**: Ensure team understands FortiManager → Primary → Secondary sync pattern
+4. **Document policy workflow**: Ensure team understands FortiManager --> Primary --> Secondary sync pattern
 5. **Plan for primary failover**: If primary instance fails, new primary automatically registers with FortiManager
 6. **Backup FortiManager regularly**: Critical single point of management; ensure proper backup strategy
 

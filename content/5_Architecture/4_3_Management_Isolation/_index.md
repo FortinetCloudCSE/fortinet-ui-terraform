@@ -81,9 +81,9 @@ When combining:
 
 Port2 will **NOT** receive an Elastic IP address. This is a valid configuration, but imposes connectivity restrictions:
 
-- ❌ **Cannot** access FortiGate management from public internet
-- ✅ **Can** access via private IP through AWS Direct Connect or VPN
-- ✅ **Can** access via management VPC (see Option 3 below)
+- **Cannot** access FortiGate management from public internet
+- **Can** access via private IP through AWS Direct Connect or VPN
+- **Can** access via management VPC (see Option 3 below)
 
 If you require public internet access to the FortiGate management interface with NAT Gateway egress, either:
 1. Use `access_internet_mode = "eip"` (assigns EIP to port2)
@@ -179,12 +179,12 @@ When `enable_dedicated_management_vpc = true`:
 
 ### Network Connectivity Requirements
 
-**Management VPC → Inspection VPC Connectivity**:
+**Management VPC --> Inspection VPC Connectivity**:
 - Required for FortiGate HA synchronization between instances
 - Typically implemented via VPC peering or Transit Gateway attachment
 - Must allow TCP port 443 (HA sync), TCP 22 (SSH), ICMP (health checks)
 
-**Management VPC → Internet Connectivity**:
+**Management VPC --> Internet Connectivity**:
 - Required for FortiGuard services (signature updates, licensing)
 - Required for administrator access to FortiGate management interfaces
 - Can be via Internet Gateway, NAT Gateway, or AWS Direct Connect
@@ -225,18 +225,18 @@ Use this decision tree to select the appropriate management isolation level:
 
 ```
 1. Is this a production deployment?
-   ├─ No → Combined Data + Management (simplest)
-   └─ Yes → Continue to question 2
+   |--- No --> Combined Data + Management (simplest)
+   \--- Yes --> Continue to question 2
 
 2. Do you have compliance requirements for management plane isolation?
-   ├─ No → Dedicated Management ENI (good balance)
-   └─ Yes → Continue to question 3
+   |--- No --> Dedicated Management ENI (good balance)
+   \--- Yes --> Continue to question 3
 
 3. Do you have existing management VPC infrastructure?
-   ├─ Yes → Dedicated Management VPC (leverage existing)
-   └─ No → Evaluate cost/benefit:
-       ├─ High security requirements → Dedicated Management VPC
-       └─ Moderate requirements → Dedicated Management ENI
+   |--- Yes --> Dedicated Management VPC (leverage existing)
+   \--- No --> Evaluate cost/benefit:
+       |--- High security requirements --> Dedicated Management VPC
+       \--- Moderate requirements --> Dedicated Management ENI
 ```
 
 ---

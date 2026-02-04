@@ -18,9 +18,9 @@ This summary provides a comprehensive reference of all solution components cover
 | Option | Hourly Cost | Data Processing | Monthly Cost (2 AZs) | Source IP | Best For |
 |--------|-------------|-----------------|----------------------|-----------|----------|
 | **EIP Mode** | $0.005/IP | None | ~$7.20 | Variable | Cost-sensitive, dev/test |
-| **NAT Gateway** | $0.045/NAT × 2 | $0.045/GB | ~$65 base + data† | Stable | Production, compliance |
+| **NAT Gateway** | $0.045/NAT x 2 | $0.045/GB | ~$65 base + data* | Stable | Production, compliance |
 
-† **Data processing example**: 1 TB/month = $45 additional cost  
+* **Data processing example**: 1 TB/month = $45 additional cost  
 **Total NAT Gateway cost estimate**: $65 (base) + $45 (1TB data) = **$110/month** for 2 AZs with 1TB egress
 
 ```hcl
@@ -28,8 +28,8 @@ access_internet_mode = "eip"  # or "nat_gw"
 ```
 
 **Key Decision**: Do you need predictable source IPs for allowlisting (white-listing)?
-- Yes → NAT Gateway (stable IPs, higher cost)
-- No → EIP (variable IPs, lower cost)
+- Yes --> NAT Gateway (stable IPs, higher cost)
+- No --> EIP (variable IPs, lower cost)
 
 ---
 
@@ -80,7 +80,7 @@ fortimanager_ip                 = "10.0.100.50"
 fortimanager_sn                 = "FMGVM0000000001"
 ```
 
-**⚠️ Critical**: FortiManager 7.6.3+ requires `fgfm-allow-vm` enabled before deployment
+**Critical**: FortiManager 7.6.3+ requires `fgfm-allow-vm` enabled before deployment
 
 ---
 
@@ -92,7 +92,7 @@ asg_byol_asg_max_size = 4
 asg_ondemand_asg_max_size = 4
 ```
 
-**Formula**: `Capacity = (Peak Gbps / Per-Instance Gbps) × 1.2`
+**Formula**: `Capacity = (Peak Gbps / Per-Instance Gbps) x 1.2`
 
 ---
 
@@ -169,30 +169,30 @@ primary_scalein_protection = true
 
 ```
 1. Do you need predictable source IPs for allowlisting?
-   ├─ Yes → NAT Gateway (~$110/month for 2 AZs + 1TB data)
-   └─ No → EIP (~$7/month)
+   |--- Yes --> NAT Gateway (~$110/month for 2 AZs + 1TB data)
+   \--- No --> EIP (~$7/month)
 
 2. Dedicated management interface?
-   ├─ Yes → 2-ARM + Dedicated ENI
-   └─ No → 1-ARM
+   |--- Yes --> 2-ARM + Dedicated ENI
+   \--- No --> 1-ARM
 
 3. Complete management isolation?
-   ├─ Yes → Dedicated Management VPC
-   └─ No → Dedicated ENI or skip
+   |--- Yes --> Dedicated Management VPC
+   \--- No --> Dedicated ENI or skip
 
 4. Licensing model?
-   ├─ Long-term (12+ months) → BYOL
-   ├─ Variable workload → FortiFlex
-   ├─ Short-term (< 3 months) → PAYG
-   └─ Best optimization → BYOL + PAYG hybrid
+   |--- Long-term (12+ months) --> BYOL
+   |--- Variable workload --> FortiFlex
+   |--- Short-term (< 3 months) --> PAYG
+   \--- Best optimization --> BYOL + PAYG hybrid
 
 5. Centralized policy management?
-   ├─ Yes → Enable FortiManager
-   └─ No → Standalone
+   |--- Yes --> Enable FortiManager
+   \--- No --> Standalone
 
 6. Production deployment?
-   ├─ Yes → Enable primary scale-in protection
-   └─ No → Optional
+   |--- Yes --> Enable primary scale-in protection
+   \--- No --> Optional
 ```
 
 ---
@@ -206,7 +206,7 @@ primary_scalein_protection = true
 - [ ] Transit Gateway configured (if needed)
 
 **Licensing**:
-- [ ] BYOL: License files ready (≥ max_size)
+- [ ] BYOL: License files ready (>= max_size)
 - [ ] FortiFlex: Program registered, API credentials
 - [ ] PAYG: Marketplace subscription accepted
 

@@ -7,7 +7,8 @@
     "doc": "docs"
   },
   "scripts": {
-    "hugo": "cross-env-shell docker run --rm -it -v $INIT_CWD/content/:/home/CentralRepo/content -v $INIT_CWD/docs:/home/CentralRepo/public -v $INIT_CWD/layouts:/home/UserRepo/layouts -v $INIT_CWD/scripts:/home/UserRepo/scripts fortinet-hugo:latest"
+    "hugo": "cross-env-shell docker run --rm -it -v $INIT_CWD/content/:/home/CentralRepo/content -v $INIT_CWD/content/:/home/UserRepo/content -v $INIT_CWD/docs:/home/CentralRepo/public -v $INIT_CWD/layouts:/home/UserRepo/layouts -v $INIT_CWD/scripts:/home/UserRepo/scripts fortinet-hugo:latest",
+    "server": "cross-env-shell docker run --rm -it -p 1313:1313 -v $INIT_CWD/content/:/home/CentralRepo/content -v $INIT_CWD/content/:/home/UserRepo/content -v $INIT_CWD/docs:/home/CentralRepo/public -v $INIT_CWD/layouts:/home/UserRepo/layouts -v $INIT_CWD/scripts:/home/UserRepo/scripts fortinet-hugo:latest server"
   },
   "keywords": [],
   "author": "",

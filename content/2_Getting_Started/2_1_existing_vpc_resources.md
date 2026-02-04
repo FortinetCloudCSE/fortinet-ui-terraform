@@ -127,7 +127,7 @@ This creates HA sync subnets (indices 10 & 11) for FGCP cluster synchronization.
 
 Show:
 - Two checkboxes
-- Enable AutoScale Deployment [✓]
+- Enable AutoScale Deployment [[x]]
 - Enable HA Pair Deployment [ ]
 - Warning message: "These modes are mutually exclusive - choose one"
 - Help text explaining what each mode creates
@@ -174,8 +174,8 @@ Check **Enable Build Existing Subnets** to create:
 **TODO: Add diagram - component-flags**
 
 Show checkboxes for:
-[✓] Enable Build Management VPC
-[✓] Enable Build Existing Subnets
+[[x]] Enable Build Management VPC
+[[x]] Enable Build Existing Subnets
 With descriptions of what each creates
 {{%/* /notice */%}}
 
@@ -201,7 +201,7 @@ If you enabled Management VPC and want FortiManager:
 **TODO: Add diagram - fortimanager-config**
 
 Show FortiManager section with:
-- Enable FortiManager checkbox [✓]
+- Enable FortiManager checkbox [[x]]
 - Instance Type dropdown: "m5.large" selected
 - OS Version field: "7.4.5"
 - Admin Password field: [password masked]
@@ -271,7 +271,7 @@ This connects the management VPC to the Transit Gateway, allowing:
 
 Show:
 - Enable Management VPC TGW Attachment checkbox
-- Diagram showing Management VPC → TGW → Spoke VPCs connection
+- Diagram showing Management VPC --> TGW --> Spoke VPCs connection
 {{%/* /notice */%}}
 
 ---
@@ -506,11 +506,11 @@ Type `yes` when prompted.
 ### Pattern 1: Minimal Lab (Management VPC Only)
 
 ```
-✓ Enable Build Management VPC
-✓ Enable Jump Box
-✗ Enable FortiManager
-✗ Enable FortiAnalyzer
-✗ Enable Build Existing Subnets
+[x] Enable Build Management VPC
+[x] Enable Jump Box
+[ ] Enable FortiManager
+[ ] Enable FortiAnalyzer
+[ ] Enable Build Existing Subnets
 ```
 
 **Use case:** Testing FortiGate deployment with minimal supporting infrastructure
@@ -520,16 +520,16 @@ Type `yes` when prompted.
 ### Pattern 2: Complete Lab (Everything)
 
 ```
-✓ Enable AutoScale Deployment (or HA Pair Deployment)
-✓ Enable Build Management VPC
-✓ Enable FortiManager
-✓ Enable FortiAnalyzer
-✓ Enable Jump Box
-✓ Enable Management VPC TGW Attachment
-✓ Enable Build Existing Subnets
-✓ Enable East Linux Instances
-✓ Enable West Linux Instances
-✓ Enable Debug TGW Attachment
+[x] Enable AutoScale Deployment (or HA Pair Deployment)
+[x] Enable Build Management VPC
+[x] Enable FortiManager
+[x] Enable FortiAnalyzer
+[x] Enable Jump Box
+[x] Enable Management VPC TGW Attachment
+[x] Enable Build Existing Subnets
+[x] Enable East Linux Instances
+[x] Enable West Linux Instances
+[x] Enable Debug TGW Attachment
 ```
 
 **Use case:** Full-featured training environment with all components
@@ -539,15 +539,15 @@ Type `yes` when prompted.
 ### Pattern 3: Production Testing (No Debug Features)
 
 ```
-✓ Enable AutoScale Deployment (or HA Pair Deployment)
-✓ Enable Build Management VPC
-✓ Enable FortiManager
-✓ Enable FortiAnalyzer
-✓ Enable Jump Box
-✓ Enable Management VPC TGW Attachment
-✓ Enable Build Existing Subnets
-✗ Enable East/West Linux Instances (use real workloads)
-✗ Enable Debug TGW Attachment
+[x] Enable AutoScale Deployment (or HA Pair Deployment)
+[x] Enable Build Management VPC
+[x] Enable FortiManager
+[x] Enable FortiAnalyzer
+[x] Enable Jump Box
+[x] Enable Management VPC TGW Attachment
+[x] Enable Build Existing Subnets
+[ ] Enable East/West Linux Instances (use real workloads)
+[ ] Enable Debug TGW Attachment
 ```
 
 **Use case:** Production-like testing environment
@@ -560,9 +560,9 @@ The UI provides real-time validation:
 
 ### CIDR Validation
 
-- ✅ Valid CIDR format (e.g., `10.0.0.0/16`)
-- ❌ Invalid format shows error message
-- ❌ Overlapping CIDRs highlighted
+- Valid CIDR format (e.g., `10.0.0.0/16`)
+- Invalid format shows error message
+- Overlapping CIDRs highlighted
 
 ### Required Fields
 

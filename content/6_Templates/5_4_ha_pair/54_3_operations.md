@@ -11,12 +11,12 @@ weight: 3
 The ha_pair template implements automatic TGW route updates:
 
 **Stage 1: After existing_vpc_resources deployment**
-- East/West spoke VPC default routes → Management VPC attachment
+- East/West spoke VPC default routes --> Management VPC attachment
 - Allows spoke instances to bootstrap via jump box NAT
 
 **Stage 2: After ha_pair deployment**
 - ha_pair template deletes old default routes from east/west TGW route tables
-- Creates new default routes → Inspection VPC attachment
+- Creates new default routes --> Inspection VPC attachment
 - Traffic now flows through FortiGate HA pair
 - Management VPC routes remain for ongoing access
 
@@ -147,7 +147,7 @@ get system ha status
 
 ### Scaling Instance Size
 
-To change instance type (e.g., c5n.xlarge → c5n.2xlarge):
+To change instance type (e.g., c5n.xlarge --> c5n.2xlarge):
 
 ```bash
 # Edit terraform.tfvars

@@ -9,12 +9,12 @@ weight: 531
 
 ### Prerequisites
 
-- ✅ AWS account with appropriate permissions
-- ✅ Terraform 1.0 or later installed
-- ✅ AWS CLI configured with credentials
-- ✅ SSH keypair created in target AWS region
-- ✅ FortiGate licenses (if using BYOL) or FortiFlex account (if using FortiFlex)
-- ✅ `existing_vpc_resources` deployed (if using lab environment)
+- AWS account with appropriate permissions
+- Terraform 1.0 or later installed
+- AWS CLI configured with credentials
+- SSH keypair created in target AWS region
+- FortiGate licenses (if using BYOL) or FortiFlex account (if using FortiFlex)
+- `existing_vpc_resources` deployed (if using lab environment)
 
 ### Step 1: Navigate to Template Directory
 
@@ -217,12 +217,12 @@ asg_license_directory = "asg_license"  # Directory containing .lic files
 2. Place license files in the directory:
    ```
    terraform/autoscale_template/
-   ├── terraform.tfvars
-   ├── asg_license/
-   │   ├── FGVM01-001.lic
-   │   ├── FGVM01-002.lic
-   │   ├── FGVM01-003.lic
-   │   └── FGVM01-004.lic
+   |---- terraform.tfvars
+   |---- asg_license/
+   |   |---- FGVM01-001.lic
+   |   |---- FGVM01-002.lic
+   |   |---- FGVM01-003.lic
+   |   \---- FGVM01-004.lic
    ```
 
 3. Ensure you have **at least** as many licenses as `asg_byol_asg_max_size`
@@ -406,7 +406,7 @@ See [FortiManager Integration](../../5_architecture/4_5_fortimanager_integration
 - Lambda generates `config system central-management` on primary FortiGate only
 - Primary FortiGate registers with FortiManager as unauthorized device
 - VDOM exception prevents sync to secondary instances
-- Configuration syncs from FortiManager → Primary → Secondaries
+- Configuration syncs from FortiManager --> Primary --> Secondaries
 
 See [FortiManager Integration Configuration](/mnt/project/fmg_integration_configuration.md) for advanced options including UMS mode.
 
@@ -426,16 +426,16 @@ subnet_bits = 8  # /16 + 8 = /24 subnets
 **CIDR Planning Considerations**
 
 Ensure:
-- ✅ No overlap with existing networks
-- ✅ Management VPC CIDR matches `existing_vpc_resources` if used
-- ✅ Spoke supernet encompasses all individual spoke VPC CIDRs
-- ✅ Sufficient address space for growth
-- ✅ Alignment with corporate IP addressing standards
+- No overlap with existing networks
+- Management VPC CIDR matches `existing_vpc_resources` if used
+- Spoke supernet encompasses all individual spoke VPC CIDRs
+- Sufficient address space for growth
+- Alignment with corporate IP addressing standards
 
 **Common mistakes**:
-- ❌ Overlapping inspection VPC with management VPC
-- ❌ Spoke CIDR too small for number of VPCs
-- ❌ Mismatched CIDRs between templates
+- Overlapping inspection VPC with management VPC
+- Spoke CIDR too small for number of VPCs
+- Mismatched CIDRs between templates
 {{% /notice %}}
 
 ### Step 13: Configure GWLB Endpoint Names

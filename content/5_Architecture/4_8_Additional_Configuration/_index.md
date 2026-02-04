@@ -171,15 +171,15 @@ resource_tags = {
 
 Before proceeding to deployment, verify you've configured:
 
-- ✅ **Internet Egress**: EIP or NAT Gateway mode selected
-- ✅ **Firewall Architecture**: 1-ARM or 2-ARM mode chosen
-- ✅ **Management Isolation**: Dedicated ENI and/or VPC configured (if required)
-- ✅ **Licensing**: BYOL directory populated or FortiFlex configured
-- ✅ **FortiManager**: Integration enabled (if centralized management required)
-- ✅ **Capacity**: ASG min/max/desired sizes set appropriately
-- ✅ **Primary Protection**: Scale-in protection enabled for production
-- ✅ **Instance Specs**: Instance type and FortiOS version selected
-- ✅ **Additional Options**: GUI port, cross-zone LB, key pair, tags configured
+- **Internet Egress**: EIP or NAT Gateway mode selected
+- **Firewall Architecture**: 1-ARM or 2-ARM mode chosen
+- **Management Isolation**: Dedicated ENI and/or VPC configured (if required)
+- **Licensing**: BYOL directory populated or FortiFlex configured
+- **FortiManager**: Integration enabled (if centralized management required)
+- **Capacity**: ASG min/max/desired sizes set appropriately
+- **Primary Protection**: Scale-in protection enabled for production
+- **Instance Specs**: Instance type and FortiOS version selected
+- **Additional Options**: GUI port, cross-zone LB, key pair, tags configured
 
 ---
 

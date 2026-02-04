@@ -211,7 +211,7 @@ If you enabled Transit Gateway in existing_vpc_resources:
 **TODO: Add diagram - tgw-integration**
 
 Show:
-- Enable TGW Attachment checkbox [✓]
+- Enable TGW Attachment checkbox [[x]]
 - Transit Gateway Name field: "acme-test-tgw"
 - Help text: "Use 'tgw_name' from existing_vpc_resources outputs"
 {{%/* /notice */%}}
@@ -241,7 +241,7 @@ If you want GWLB endpoints in distributed spoke VPCs:
 Show:
 - Enable Distributed Inspection checkbox
 - Help text explaining bump-in-the-wire inspection
-- Diagram: VPC → GWLBe → GWLB → GENEVE → FortiGate
+- Diagram: VPC --> GWLBe --> GWLB --> GENEVE --> FortiGate
 {{%/* /notice */%}}
 
 {{% notice info %}}
@@ -329,7 +329,7 @@ If you deployed FortiManager in existing_vpc_resources:
 **TODO: Add diagram - fortimanager-integration**
 
 Show:
-- Enable FortiManager checkbox [✓]
+- Enable FortiManager checkbox [[x]]
 - FortiManager IP field: "10.3.0.10"
 - Serial Number field
 - Help text: "Get from existing_vpc_resources outputs"
@@ -359,7 +359,7 @@ If you deployed FortiAnalyzer in existing_vpc_resources:
 **TODO: Add diagram - fortianalyzer-integration**
 
 Show:
-- Enable FortiAnalyzer checkbox [✓]
+- Enable FortiAnalyzer checkbox [[x]]
 - FortiAnalyzer IP field: "10.3.0.11"
 {{%/* /notice */%}}
 
@@ -461,10 +461,10 @@ Type `yes` when prompted.
 ```
 Firewall Policy Mode: 1-arm
 License Type: payg
-✓ Enable Transit Gateway Attachment
-✗ Enable Distributed Inspection
-✗ Enable Dedicated Management ENI
-✗ Enable FortiManager
+[x] Enable Transit Gateway Attachment
+[ ] Enable Distributed Inspection
+[ ] Enable Dedicated Management ENI
+[ ] Enable FortiManager
 Desired Capacity: 2
 Minimum Size: 2
 Maximum Size: 4
@@ -479,10 +479,10 @@ Maximum Size: 4
 ```
 Firewall Policy Mode: 2-arm
 License Type: byol
-✗ Enable Transit Gateway Attachment
-✓ Enable Distributed Inspection
-✗ Enable Dedicated Management ENI
-✗ Enable FortiManager
+[ ] Enable Transit Gateway Attachment
+[x] Enable Distributed Inspection
+[ ] Enable Dedicated Management ENI
+[ ] Enable FortiManager
 Desired Capacity: 2
 Minimum Size: 2
 Maximum Size: 6
@@ -497,11 +497,11 @@ Maximum Size: 6
 ```
 Firewall Policy Mode: 2-arm
 License Type: payg
-✓ Enable Transit Gateway Attachment
-✗ Enable Distributed Inspection
-✓ Enable Dedicated Management VPC
-✓ Enable FortiManager
-✓ Enable FortiAnalyzer
+[x] Enable Transit Gateway Attachment
+[ ] Enable Distributed Inspection
+[x] Enable Dedicated Management VPC
+[x] Enable FortiManager
+[x] Enable FortiAnalyzer
 Desired Capacity: 2
 Minimum Size: 2
 Maximum Size: 6
@@ -516,7 +516,7 @@ Maximum Size: 6
 The UI validates:
 
 - FortiGate admin password minimum length (8 characters)
-- Autoscale group sizes (min ≤ desired ≤ max)
+- Autoscale group sizes (min <= desired <= max)
 - FortiManager IP format
 - Transit Gateway name format
 - All required fields filled
