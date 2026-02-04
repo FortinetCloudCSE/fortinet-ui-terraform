@@ -184,11 +184,11 @@ This ensures `cp` in autoscale_template matches `cp` in existing_vpc_resources.
 
 ```
 terraform/
-├── my_new_template/
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   └── terraform.tfvars.example    ← Add annotations here
+|---- my_new_template/
+|   |---- main.tf
+|   |---- variables.tf
+|   |---- outputs.tf
+|   \---- terraform.tfvars.example    <-- Add annotations here
 ```
 
 ### Minimal Example

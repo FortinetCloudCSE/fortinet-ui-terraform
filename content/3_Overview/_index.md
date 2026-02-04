@@ -6,7 +6,7 @@ weight: 30
 
 ## Introduction
 
-FortiOS natively supports AWS Autoscaling capabilities, enabling dynamic horizontal scaling of FortiGate clusters within AWS environments. This solution leverages AWS Gateway Load Balancer (GWLB) to intelligently distribute traffic across FortiGate instances in the autoscale group. The cluster dynamically adjusts its capacity based on configurable thresholds—automatically launching new instances when the cluster size falls below the minimum threshold and terminating instances when capacity exceeds the maximum threshold. As instances are added or removed, they are seamlessly registered with or deregistered from associated GWLB target groups, ensuring continuous traffic inspection capabilities while maintaining optimal cluster performance and capacity.
+FortiOS natively supports AWS Autoscaling capabilities, enabling dynamic horizontal scaling of FortiGate clusters within AWS environments. This solution leverages AWS Gateway Load Balancer (GWLB) to intelligently distribute traffic across FortiGate instances in the autoscale group. The cluster dynamically adjusts its capacity based on configurable thresholds--automatically launching new instances when the cluster size falls below the minimum threshold and terminating instances when capacity exceeds the maximum threshold. As instances are added or removed, they are seamlessly registered with or deregistered from associated GWLB target groups, ensuring continuous traffic inspection capabilities while maintaining optimal cluster performance and capacity.
 
 ## Key Benefits
 

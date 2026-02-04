@@ -140,11 +140,11 @@ aws lambda list-functions --query 'Functions[?contains(FunctionName, `acme`)]'
 
 The autoscale_template is the core component of the FortiGate Autoscale Simplified Template, providing:
 
-✅ **Complete autoscale infrastructure**: FortiGate ASG, GWLB, Lambda, IAM
-✅ **Flexible deployment options**: Centralized, distributed, or hybrid architectures
-✅ **Multiple licensing models**: BYOL, FortiFlex, PAYG, or hybrid
-✅ **Management options**: Dedicated ENI, dedicated VPC, FortiManager integration
-✅ **Production-ready**: High availability, autoscaling, lifecycle management
+**Complete autoscale infrastructure**: FortiGate ASG, GWLB, Lambda, IAM
+**Flexible deployment options**: Centralized, distributed, or hybrid architectures
+**Multiple licensing models**: BYOL, FortiFlex, PAYG, or hybrid
+**Management options**: Dedicated ENI, dedicated VPC, FortiManager integration
+**Production-ready**: High availability, autoscaling, lifecycle management
 
 **Next Steps**:
 - Review [Solution Components](../../5_architecture/) for configuration options

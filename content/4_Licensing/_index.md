@@ -87,10 +87,10 @@ BYOL licensing leverages perpetual or term-based FortiGate-VM licenses purchased
 #### License File Requirements
 ```
 licenses/
-├── FGVM01-001.lic
-├── FGVM01-002.lic
-├── FGVM01-003.lic
-└── FGVM01-004.lic
+|---- FGVM01-001.lic
+|---- FGVM01-002.lic
+|---- FGVM01-003.lic
+\---- FGVM01-004.lic
 ```
 
 **Critical**: Ensure sufficient licenses exist for `asg_max_size`. If licenses are exhausted during scale-out, new instances will remain unlicensed and non-functional.
@@ -180,22 +180,22 @@ The autoscale template supports **hybrid licensing configurations** where multip
 ### Architecture Pattern
 
 ```
-┌─────────────────────────────────────────────────────┐
-│              GWLB Target Group                      │
-│                  (Unified)                          │
-└────────┬────────────────────────────────┬───────────┘
-         │                                │
-         ▼                                ▼
-┌─────────────────┐              ┌─────────────────┐
-│  BYOL/FortiFlex │              │   PAYG ASG      │
-│       ASG       │              │                 │
-│                 │              │                 │
-│  Min: 2         │              │  Min: 0         │
-│  Max: 4         │              │  Max: 8         │
-│  Desired: 2     │              │  Desired: 0     │
-│                 │              │                 │
-│ (Baseline)      │              │ (Burst)         │
-└─────────────────┘              └─────────────────┘
++-------------------------------------------------------+
+|              GWLB Target Group                      |
+|                  (Unified)                          |
+\-----------+----------------------------------+-------------+
+         |                                |
+         v                                v
++-------------------+              +-------------------+
+|  BYOL/FortiFlex |              |   PAYG ASG      |
+|       ASG       |              |                 |
+|                 |              |                 |
+|  Min: 2         |              |  Min: 0         |
+|  Max: 4         |              |  Max: 8         |
+|  Desired: 2     |              |  Desired: 0     |
+|                 |              |                 |
+| (Baseline)      |              | (Burst)         |
+\--------------------+              \--------------------+
 ```
 
 ### Configuration Strategy
@@ -224,14 +224,14 @@ The autoscale template supports **hybrid licensing configurations** where multip
 
 **Hybrid Configuration**:
 - **Primary**: 4x c6i.xlarge (4 vCPUs) with FortiFlex
-  - Daily points: 4 instances × 26.08 points = 104.32 points/day
+  - Daily points: 4 instances x 26.08 points = 104.32 points/day
   - Monthly cost: ~$X (based on point pricing)
   - Handles baseline traffic continuously
 
 - **Secondary**: 0-8x c6i.xlarge with PAYG
   - Hourly cost: $Y per instance
   - Scales only during traffic spikes (estimated 10% of time)
-  - Monthly cost: 8 instances × $Y/hour × 720 hours × 0.10 = $Z
+  - Monthly cost: 8 instances x $Y/hour x 720 hours x 0.10 = $Z
 
 **Savings vs. Pure PAYG**: Approximately 35-45% reduction for this traffic pattern
 
@@ -249,25 +249,25 @@ The autoscale template supports **hybrid licensing configurations** where multip
 
 ```
 START: What is your deployment scenario?
-│
-├─ POC / Testing / Short-term project (< 6 months)
-│  └─ Use: AWS Marketplace PAYG
-│     └─ Rationale: Simplicity, no upfront investment, easy teardown
-│
-├─ Long-term production (> 12 months) with steady-state capacity
-│  └─ Do you have existing Fortinet licenses or ELA?
-│     ├─ YES → Use: BYOL
-│     │  └─ Rationale: Lowest cost, leverage existing investment
-│     └─ NO → Use: FortiFlex
-│        └─ Rationale: Flexible, better cost than PAYG, no upfront licensing
-│
-├─ Production with variable traffic patterns
-│  └─ Use: Hybrid (FortiFlex + PAYG)
-│     └─ Rationale: Baseline cost optimization with elastic burst capacity
-│
-└─ Multi-environment deployment (dev/staging/prod)
-   └─ Use: FortiFlex
-      └─ Rationale: Point pooling across environments, on-demand provisioning
+|
+|--- POC / Testing / Short-term project (< 6 months)
+|  \--- Use: AWS Marketplace PAYG
+|     \--- Rationale: Simplicity, no upfront investment, easy teardown
+|
+|--- Long-term production (> 12 months) with steady-state capacity
+|  \--- Do you have existing Fortinet licenses or ELA?
+|     |--- YES --> Use: BYOL
+|     |  \--- Rationale: Lowest cost, leverage existing investment
+|     \--- NO --> Use: FortiFlex
+|        \--- Rationale: Flexible, better cost than PAYG, no upfront licensing
+|
+|--- Production with variable traffic patterns
+|  \--- Use: Hybrid (FortiFlex + PAYG)
+|     \--- Rationale: Baseline cost optimization with elastic burst capacity
+|
+\--- Multi-environment deployment (dev/staging/prod)
+   \--- Use: FortiFlex
+      \--- Rationale: Point pooling across environments, on-demand provisioning
 ```
 
 ---
@@ -392,8 +392,8 @@ START: What is your deployment scenario?
 
 **Resolution**:
 1. Review CloudWatch alarm configurations for both ASGs
-2. Increase primary ASG alarm threshold (e.g., 60% → 70%)
-3. Lower secondary ASG alarm threshold (e.g., 75% → 80%)
+2. Increase primary ASG alarm threshold (e.g., 60% --> 70%)
+3. Lower secondary ASG alarm threshold (e.g., 75% --> 80%)
 4. Extend alarm evaluation periods to 3-5 minutes
 5. Implement alarm dependencies (secondary alarm checks primary ASG size)
 

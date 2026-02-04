@@ -83,8 +83,8 @@ NAT Gateway mode requires additional subnet and route table configuration. Inter
 - Total monthly: ~$0 (minimal costs)
 
 **NAT Gateway Mode** (2 AZs):
-- 2 NAT Gateways: 2 × $0.045/hour × 730 hours = $65.70
-- Data processing: 10,000 GB × $0.045 = $450.00
+- 2 NAT Gateways: 2 x $0.045/hour x 730 hours = $65.70
+- Data processing: 10,000 GB x $0.045 = $450.00
 - Total monthly: $515.70
 
 **Decision Point**: NAT Gateway makes sense when consistent source IP requirement justifies the additional cost.

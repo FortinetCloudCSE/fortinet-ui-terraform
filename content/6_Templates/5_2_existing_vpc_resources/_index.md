@@ -81,10 +81,10 @@ enable_build_management_vpc = true
 **What gets created**:
 ```
 Management VPC (10.3.0.0/16)
-├── Public Subnet AZ1 (10.3.1.0/24)
-├── Public Subnet AZ2 (10.3.2.0/24)
-├── Internet Gateway
-└── Route Tables
+|---- Public Subnet AZ1 (10.3.1.0/24)
+|---- Public Subnet AZ2 (10.3.2.0/24)
+|---- Internet Gateway
+\---- Route Tables
 ```
 
 **Resource tags applied** (for autoscale_template discovery):
@@ -165,7 +165,7 @@ enable_mgmt_vpc_tgw_attachment = true
 - Alternative management access paths
 
 **Routing**:
-- Management VPC → TGW → Spoke VPCs
+- Management VPC --> TGW --> Spoke VPCs
 - Can be combined with `enable_debug_tgw_attachment` for bypass testing
 
 ---
@@ -191,12 +191,12 @@ enable_autoscale_deployment = true
 **Subnet layout**:
 ```
 Inspection VPC Subnets (AutoScale Mode)
-├── Index 0: Public Subnet AZ1 (FortiGate Port1)
-├── Index 1: Public Subnet AZ2 (FortiGate Port1)
-├── Index 2: Private Subnet AZ1 (FortiGate Port2)
-├── Index 3: Private Subnet AZ2 (FortiGate Port2)
-├── Index 4: GWLB Subnet AZ1 ← Created by existing_vpc_resources
-└── Index 5: GWLB Subnet AZ2 ← Created by existing_vpc_resources
+|---- Index 0: Public Subnet AZ1 (FortiGate Port1)
+|---- Index 1: Public Subnet AZ2 (FortiGate Port1)
+|---- Index 2: Private Subnet AZ1 (FortiGate Port2)
+|---- Index 3: Private Subnet AZ2 (FortiGate Port2)
+|---- Index 4: GWLB Subnet AZ1 <-- Created by existing_vpc_resources
+\---- Index 5: GWLB Subnet AZ2 <-- Created by existing_vpc_resources
 ```
 
 **When to use**: Choose AutoScale mode when deploying [autoscale_template](../5_3_autoscale_template/) for elastic scaling with Gateway Load Balancer.
@@ -216,16 +216,16 @@ enable_ha_pair_deployment = true
 **Subnet layout**:
 ```
 Inspection VPC Subnets (HA Pair Mode)
-├── Index 0: Public Subnet AZ1 (Primary FGT Port1)
-├── Index 1: Public Subnet AZ2 (Secondary FGT Port1)
-├── Index 2: Private Subnet AZ1 (Primary FGT Port2)
-├── Index 3: Private Subnet AZ2 (Secondary FGT Port2)
-├── Index 6: TGW Subnet AZ1 (Primary FGT Port3)
-├── Index 7: TGW Subnet AZ2 (Secondary FGT Port3)
-├── Index 8: Management Subnet AZ1 (Primary FGT Port4)
-├── Index 9: Management Subnet AZ2 (Secondary FGT Port4)
-├── Index 10: HA Sync Subnet AZ1 ← Created by existing_vpc_resources
-└── Index 11: HA Sync Subnet AZ2 ← Created by existing_vpc_resources
+|---- Index 0: Public Subnet AZ1 (Primary FGT Port1)
+|---- Index 1: Public Subnet AZ2 (Secondary FGT Port1)
+|---- Index 2: Private Subnet AZ1 (Primary FGT Port2)
+|---- Index 3: Private Subnet AZ2 (Secondary FGT Port2)
+|---- Index 6: TGW Subnet AZ1 (Primary FGT Port3)
+|---- Index 7: TGW Subnet AZ2 (Secondary FGT Port3)
+|---- Index 8: Management Subnet AZ1 (Primary FGT Port4)
+|---- Index 9: Management Subnet AZ2 (Secondary FGT Port4)
+|---- Index 10: HA Sync Subnet AZ1 <-- Created by existing_vpc_resources
+\---- Index 11: HA Sync Subnet AZ2 <-- Created by existing_vpc_resources
 ```
 
 **HA Sync Subnet Purpose**:
@@ -242,8 +242,8 @@ Inspection VPC Subnets (HA Pair Mode)
 **Important: Choose One Mode Only**
 
 You **cannot** enable both deployment modes simultaneously:
-- `enable_autoscale_deployment = true` → Creates GWLB subnets (indices 4 & 5)
-- `enable_ha_pair_deployment = true` → Creates HA sync subnets (indices 10 & 11)
+- `enable_autoscale_deployment = true` --> Creates GWLB subnets (indices 4 & 5)
+- `enable_ha_pair_deployment = true` --> Creates HA sync subnets (indices 10 & 11)
 
 The UI automatically unchecks one when you select the other. Attempting to enable both will result in configuration errors.
 {{% /notice %}}
@@ -268,21 +268,21 @@ enable_build_existing_subnets = true
 **What gets created**:
 ```
 Transit Gateway
-├── East Spoke VPC (192.168.0.0/24)
-│   ├── Public Subnet AZ1
-│   ├── Private Subnet AZ1
-│   ├── NAT Gateway (optional)
-│   └── Linux Instance (optional)
-│
-├── West Spoke VPC (192.168.1.0/24)
-│   ├── Public Subnet AZ1
-│   ├── Private Subnet AZ1
-│   ├── NAT Gateway (optional)
-│   └── Linux Instance (optional)
-│
-└── TGW Route Tables
-    ├── Spoke-to-Spoke (via inspection VPC)
-    └── Inspection-to-Internet
+|---- East Spoke VPC (192.168.0.0/24)
+|   |---- Public Subnet AZ1
+|   |---- Private Subnet AZ1
+|   |---- NAT Gateway (optional)
+|   \---- Linux Instance (optional)
+|
+|---- West Spoke VPC (192.168.1.0/24)
+|   |---- Public Subnet AZ1
+|   |---- Private Subnet AZ1
+|   |---- NAT Gateway (optional)
+|   \---- Linux Instance (optional)
+|
+\---- TGW Route Tables
+    |---- Spoke-to-Spoke (via inspection VPC)
+    \---- Inspection-to-Internet
 ```
 
 #### Transit Gateway
@@ -356,7 +356,7 @@ enable_debug_tgw_attachment = true
 
 **Purpose**: Creates a **bypass attachment** from Management VPC directly to Transit Gateway, allowing traffic to flow:
 ```
-Jump Box → TGW → Spoke VPC Linux Instances (bypassing FortiGate inspection)
+Jump Box --> TGW --> Spoke VPC Linux Instances (bypassing FortiGate inspection)
 ```
 
 **Debug path use cases**:

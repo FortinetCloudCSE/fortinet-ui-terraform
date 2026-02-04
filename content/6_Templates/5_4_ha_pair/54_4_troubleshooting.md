@@ -174,13 +174,13 @@ aws ec2 search-transit-gateway-routes \
 The ha_pair template provides a robust Active-Passive FortiGate HA deployment using native FortiOS clustering:
 
 **Key Capabilities:**
-- ✅ FGCP Active-Passive with automatic failover
-- ✅ Session synchronization for stateful inspection
-- ✅ Native AWS integration (EIP/route reassignment)
-- ✅ VPC endpoint for private AWS API access
-- ✅ Automatic Transit Gateway routing updates
-- ✅ Support for PAYG, BYOL, and FortiFlex licensing
-- ✅ FortiManager/FortiAnalyzer integration
+- FGCP Active-Passive with automatic failover
+- Session synchronization for stateful inspection
+- Native AWS integration (EIP/route reassignment)
+- VPC endpoint for private AWS API access
+- Automatic Transit Gateway routing updates
+- Support for PAYG, BYOL, and FortiFlex licensing
+- FortiManager/FortiAnalyzer integration
 
 **Deployment Time:** 20-30 minutes after existing_vpc_resources
 

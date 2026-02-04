@@ -78,9 +78,9 @@ This "bump-in-the-wire" architecture is the typical 1-ARM pattern for distribute
 **GWLB Statefulness**: The Gateway Load Balancer maintains connection state tables for traffic flows.
 
 **Primary Traffic Pattern (Distributed Architecture)**:
-- ✅ Traffic enters via Geneve tunnel → FortiGate inspection → **Hairpins back through same Geneve tunnel**
-- ✅ Distributed VPC handles actual internet egress via its own IGW/NAT Gateway
-- ✅ This "bump-in-the-wire" model provides security inspection without routing traffic through inspection VPC
+- Traffic enters via Geneve tunnel --> FortiGate inspection --> **Hairpins back through same Geneve tunnel**
+- Distributed VPC handles actual internet egress via its own IGW/NAT Gateway
+- This "bump-in-the-wire" model provides security inspection without routing traffic through inspection VPC
 
 **Key Requirement**: Symmetric routing through the GWLB. Traffic must return via the same Geneve tunnel it arrived on to maintain proper state table entries.
 
@@ -112,7 +112,7 @@ This is the standard architecture for centralized internet egress where:
 **Distributed Architecture - Alternative Pattern (Advanced Use Case)**
 
 In distributed architectures where spoke VPCs have their own internet egress, it is **possible** (but not typical) to configure traffic to exit through the inspection VPC instead of hairpinning:
-- Traffic enters via Geneve tunnel → Exits port1 to internet → Response returns via port1 to same Geneve tunnel
+- Traffic enters via Geneve tunnel --> Exits port1 to internet --> Response returns via port1 to same Geneve tunnel
 
 This pattern requires:
 - Careful route table configuration in the inspection VPC

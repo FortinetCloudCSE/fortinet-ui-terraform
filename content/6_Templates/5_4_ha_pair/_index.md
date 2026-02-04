@@ -56,7 +56,7 @@ Show complete HA Pair architecture:
 - East/West Spoke VPCs with Linux instances generating traffic
 - Arrows showing:
   * Heartbeat between FortiGates over port3
-  * Traffic flow: Spoke → TGW → Primary FGT → Internet
+  * Traffic flow: Spoke --> TGW --> Primary FGT --> Internet
   * Failover: EIP reassignment, route table updates
 ```
 

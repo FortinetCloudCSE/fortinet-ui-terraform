@@ -34,16 +34,16 @@ The autoscale_template deploys a complete FortiGate autoscale solution including
 
 | Component | Purpose | Always Created |
 |-----------|---------|----------------|
-| **Inspection VPC** | Dedicated VPC for FortiGate instances and GWLB | ✅ Yes |
-| **FortiGate Autoscale Groups** | BYOL and/or on-demand instance groups | ✅ Yes |
-| **Gateway Load Balancer** | Distributes traffic across FortiGate instances | ✅ Yes |
-| **GWLB Endpoints** | Connection points in each AZ | ✅ Yes |
-| **Lambda Functions** | Lifecycle management and licensing automation | ✅ Yes |
-| **DynamoDB Table** | License tracking and state management | ✅ Yes (if BYOL) |
-| **S3 Bucket** | License file storage and Lambda code | ✅ Yes (if BYOL) |
-| **IAM Roles** | Permissions for Lambda and EC2 instances | ✅ Yes |
-| **Security Groups** | Network access control | ✅ Yes |
-| **CloudWatch Alarms** | Autoscaling triggers | ✅ Yes |
+| **Inspection VPC** | Dedicated VPC for FortiGate instances and GWLB | Yes |
+| **FortiGate Autoscale Groups** | BYOL and/or on-demand instance groups | Yes |
+| **Gateway Load Balancer** | Distributes traffic across FortiGate instances | Yes |
+| **GWLB Endpoints** | Connection points in each AZ | Yes |
+| **Lambda Functions** | Lifecycle management and licensing automation | Yes |
+| **DynamoDB Table** | License tracking and state management | Yes (if BYOL) |
+| **S3 Bucket** | License file storage and Lambda code | Yes (if BYOL) |
+| **IAM Roles** | Permissions for Lambda and EC2 instances | Yes |
+| **Security Groups** | Network access control | Yes |
+| **CloudWatch Alarms** | Autoscaling triggers | Yes |
 
 ### Optional Components
 
@@ -71,7 +71,7 @@ attach_to_tgw_name = "production-tgw"
 
 **Traffic flow**:
 ```
-Spoke VPCs → TGW → Inspection VPC → FortiGate → GWLB → Internet
+Spoke VPCs --> TGW --> Inspection VPC --> FortiGate --> GWLB --> Internet
 ```
 
 **Use cases**:
@@ -90,7 +90,7 @@ enable_distributed_inspection = true
 
 **Traffic flow**:
 ```
-VPC → GWLBe → GWLB → GENEVE tunnel → FortiGate → GENEVE tunnel → GWLB → GWLBe → VPC
+VPC --> GWLBe --> GWLB --> GENEVE tunnel --> FortiGate --> GENEVE tunnel --> GWLB --> GWLBe --> VPC
 ```
 
 **Use cases**:
@@ -116,8 +116,8 @@ enable_fortimanager_integration = true
 
 **Traffic flow**:
 ```
-Data: Spoke VPCs → TGW → FortiGate → Internet
-Management: FortiGate → Management VPC → FortiManager
+Data: Spoke VPCs --> TGW --> FortiGate --> Internet
+Management: FortiGate --> Management VPC --> FortiManager
 ```
 
 **Use cases**:

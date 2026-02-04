@@ -61,31 +61,31 @@ Use this decision tree to determine which template(s) you need:
 
 ```
 1. Do you need elastic scaling or fixed-capacity deployment?
-   ├─ ELASTIC SCALING → Choose AutoScale deployment mode
-   │   │                 Deploy existing_vpc_resources (AutoScale mode)
-   │   │                 Then deploy autoscale_template
-   │   └────────────────→ Best for: Variable workloads, cost optimization
-   │
-   └─ FIXED CAPACITY → Choose HA Pair deployment mode
-       │                Deploy existing_vpc_resources (HA Pair mode)
-       │                Then deploy ha_pair template
-       └────────────────→ Best for: Predictable workloads, stateful failover
+   |--- ELASTIC SCALING --> Choose AutoScale deployment mode
+   |   |                 Deploy existing_vpc_resources (AutoScale mode)
+   |   |                 Then deploy autoscale_template
+   |   \--------------------> Best for: Variable workloads, cost optimization
+   |
+   \--- FIXED CAPACITY --> Choose HA Pair deployment mode
+       |                Deploy existing_vpc_resources (HA Pair mode)
+       |                Then deploy ha_pair template
+       \--------------------> Best for: Predictable workloads, stateful failover
 
 2. Do you have existing AWS infrastructure (VPCs, Transit Gateway)?
-   ├─ YES → Deploy existing_vpc_resources with appropriate mode
-   │         Integrate with existing TGW and VPCs
-   │         See: Production Integration Pattern
-   │
-   └─ NO → Deploy existing_vpc_resources with appropriate mode
+   |--- YES --> Deploy existing_vpc_resources with appropriate mode
+   |         Integrate with existing TGW and VPCs
+   |         See: Production Integration Pattern
+   |
+   \--- NO --> Deploy existing_vpc_resources with appropriate mode
            Creates complete environment including TGW
            See: Lab Environment Pattern
 
 3. Do you need centralized management (FortiManager/FortiAnalyzer)?
-   ├─ YES → Enable FortiManager/FortiAnalyzer in existing_vpc_resources
-   │         Configure integration in autoscale_template or ha_pair
-   │         See: Management VPC Pattern
-   │
-   └─ NO → Skip FortiManager/FortiAnalyzer components
+   |--- YES --> Enable FortiManager/FortiAnalyzer in existing_vpc_resources
+   |         Configure integration in autoscale_template or ha_pair
+   |         See: Management VPC Pattern
+   |
+   \--- NO --> Skip FortiManager/FortiAnalyzer components
            Deploy minimal configuration
 ```
 
@@ -114,8 +114,8 @@ Use this decision tree to determine which template(s) you need:
 **Use case**: Full-featured testing environment with management and traffic generation
 
 **Templates needed**:
-1. ✅ existing_vpc_resources (with all components enabled)
-2. ✅ autoscale_template (connects to created TGW)
+1. existing_vpc_resources (with all components enabled)
+2. autoscale_template (connects to created TGW)
 
 **What you get**:
 - Management VPC with FortiManager, FortiAnalyzer, and Jump Box
@@ -137,8 +137,8 @@ Use this decision tree to determine which template(s) you need:
 **Use case**: Deploy FortiGate inspection to existing production infrastructure
 
 **Templates needed**:
-1. ❌ existing_vpc_resources (skip entirely)
-2. ✅ autoscale_template (connects to existing infrastructure)
+1. existing_vpc_resources (skip entirely)
+2. autoscale_template (connects to existing infrastructure)
 
 **Prerequisites**:
 - Existing inspection VPC (or create new)
@@ -164,8 +164,8 @@ Use this decision tree to determine which template(s) you need:
 **Use case**: Testing FortiManager/FortiAnalyzer integration without spoke VPCs
 
 **Templates needed**:
-1. ✅ existing_vpc_resources (management VPC components only)
-2. ✅ autoscale_template (with FortiManager integration enabled)
+1. existing_vpc_resources (management VPC components only)
+2. autoscale_template (with FortiManager integration enabled)
 
 **What you get**:
 - Dedicated management VPC with FortiManager and FortiAnalyzer
@@ -185,8 +185,8 @@ Use this decision tree to determine which template(s) you need:
 **Use case**: Bump-in-the-wire inspection for distributed spoke VPCs
 
 **Templates needed**:
-1. ✅ existing_vpc_resources (with `distributed_vpc_cidrs` configured)
-2. ✅ autoscale_template (with `enable_distributed_inspection = true`)
+1. existing_vpc_resources (with `distributed_vpc_cidrs` configured)
+2. autoscale_template (with `enable_distributed_inspection = true`)
 
 **Prerequisites**:
 - None - templates create everything needed
@@ -355,7 +355,7 @@ terraform output  # Check for distributed VPC GWLB endpoints
 **What happens automatically**:
 - Module discovers distributed VPCs by tag pattern (`{cp}-{env}-distributed-*-vpc`)
 - Creates GWLB endpoints in each distributed VPC's GWLBE subnets
-- Configures bump-in-the-wire routing (private → GWLBE → FortiGate → GWLBE → IGW)
+- Configures bump-in-the-wire routing (private --> GWLBE --> FortiGate --> GWLBE --> IGW)
 - All distributed VPCs share same firewall policy (single VDOM mode)
 
 **Time to complete**: 25-30 minutes
@@ -366,34 +366,34 @@ terraform output  # Check for distributed VPC GWLB endpoints
 
 ### Use existing_vpc_resources When:
 
-✅ **Creating a lab or test environment from scratch**
+**Creating a lab or test environment from scratch**
 - Need complete isolated environment
 - Want to test all features including FortiManager/FortiAnalyzer
 - Require traffic generation for load testing
 
-✅ **Demonstrating FortiGate autoscale capabilities**
+**Demonstrating FortiGate autoscale capabilities**
 - Sales Engineering demonstrations
 - Proof-of-concept deployments
 - Training and enablement sessions
 
-✅ **Need centralized management infrastructure**
+**Need centralized management infrastructure**
 - First-time FortiManager deployment
 - Want persistent management VPC separate from inspection VPC
 - Require FortiAnalyzer for logging/reporting
 
 ### Skip existing_vpc_resources When:
 
-❌ **Deploying to production**
+**Deploying to production**
 - Existing Transit Gateway and VPCs available
 - Integration with established workloads required
 - Management infrastructure already exists
 
-❌ **Cost-sensitive testing**
+**Cost-sensitive testing**
 - FortiManager/FortiAnalyzer not needed for specific tests
 - Minimal viable deployment preferred
 - Short-term testing (< 1 week)
 
-✅ **Distributed inspection architecture**
+**Distributed inspection architecture**
 - Use existing_vpc_resources with `distributed_vpc_cidrs` to create distributed spoke VPCs
 - Templates automatically create GWLBE subnets and configure bump-in-the-wire routing
 - No Transit Gateway needed for distributed VPCs
