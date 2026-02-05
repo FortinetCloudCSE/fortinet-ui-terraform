@@ -172,6 +172,54 @@ Click **Generate** to create the `terraform.tfvars` file, then either:
 
 ---
 
+## Docker Containers (Alternative)
+
+Run the UI and Hugo documentation server in Docker containers instead of locally.
+
+### Start Containers
+
+```bash
+cd ui/docker-containers
+docker-compose up -d
+```
+
+### Services
+
+| Service | Port | URL |
+|---------|------|-----|
+| Frontend | 3001 | http://localhost:3001 |
+| Backend | 8001 | http://localhost:8001 |
+| Hugo Docs | 1313 | http://localhost:1313/fortinet-ui-terraform/ |
+
+### AWS Credentials for Containers
+
+Send credentials to the containerized backend (note port 8001):
+
+```bash
+source sso_login/aws_login.sh my-profile http://localhost:8001
+```
+
+### Container Commands
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Start only UI (no Hugo)
+docker-compose up -d backend frontend
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up -d --build
+```
+
+---
+
 ## Troubleshooting
 
 ### Backend Won't Start

@@ -3,6 +3,7 @@ public/
 docs/
 node_modules/
 docker-compose.yml
+!ui/docker-containers/docker-compose.yml
 package-lock.json
 package.json
 !ui/frontend/package.json
