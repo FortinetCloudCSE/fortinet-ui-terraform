@@ -1,0 +1,37 @@
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    volumes:
+      # Mount terraform templates for file operations
+      - ../../terraform:/app/terraform:rw
+    environment:
+      - CORS_ORIGINS=http://localhost:3001,http://127.0.0.1:3001
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+    environment:
+      # Use backend container hostname for internal proxy
+      - VITE_API_URL=http://backend:8000
+
+  # Hugo documentation server
+  hugo:
+    image: fortinet-hugo:latest
+    ports:
+      - "1313:1313"
+    volumes:
+      - ../../content:/home/CentralRepo/content
+      - ../../content:/home/UserRepo/content
+      - ../../docs:/home/CentralRepo/public
+      - ../../layouts:/home/UserRepo/layouts
+      - ../../scripts:/home/UserRepo/scripts
+    command: server --bind 0.0.0.0
