@@ -38,8 +38,7 @@ Open http://localhost:3000 and follow the [Getting Started](../2_getting_started
 
 | Section | Description |
 |---------|-------------|
-| **[Getting Started](../2_getting_started/)** | Step-by-step UI configuration guides |
-| **[Overview](../3_overview/)** | Architecture patterns and key benefits |
-| **[Licensing](../4_licensing/)** | BYOL, PAYG, and FortiFlex licensing |
-| **[Architecture](../5_architecture/)** | Configuration options deep-dive |
-| **[Templates](../6_templates/)** | Manual Terraform and annotation reference |
+| **[Getting Started](../2_getting_started/)** | UI setup and AWS credentials |
+| **[Example Templates](../3_example_templates/)** | Step-by-step UI configuration guides |
+| **[Autoscale Reference](../3_example_templates/3_2_autoscale_template/autoscale_reference/)** | Architecture and configuration deep-dive |
+| **[Templates](../3_Example_Templates/)** | Manual Terraform and annotation reference |

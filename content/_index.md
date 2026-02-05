@@ -11,7 +11,7 @@ A graphical interface for configuring Terraform deployments.
 
 <!--more-->
 
-![Terraform Configuration Web UI](1_Introduction/ui-screenshot.png)
+![Terraform Configuration Web UI](ui-screenshot.png)
 
 Generate `terraform.tfvars` files through a graphical interface. The UI dynamically builds forms from annotated `terraform.tfvars.example` files, making any Terraform template configurable without editing text files.
 

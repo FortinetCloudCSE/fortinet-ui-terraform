@@ -3,35 +3,11 @@ title: "Getting Started"
 chapter: false
 menuTitle: "Getting Started"
 weight: 20
-description: "Set up the Terraform Web UI and configure AWS credentials"
-summary: "Set up the Terraform Web UI and configure AWS credentials"
 ---
 
-Set up the Terraform Web UI and configure AWS credentials for resource discovery.
+Get the Terraform Web UI running and configure AWS credentials.
 
 <!--more-->
-
-## Overview
-
-The Terraform Web UI provides a graphical interface for configuring **any Terraform template** with a properly annotated `terraform.tfvars.example` file. Instead of manually editing variable files, you configure deployments through dynamically generated forms.
-
-**Key Features:**
-- **Form-based configuration** - Fill out forms instead of editing text files
-- **Dynamic form generation** - Forms built automatically from annotated example files
-- **AWS integration** - Automatically discovers regions, availability zones, and key pairs
-- **Field validation** - Real-time validation prevents configuration errors
-- **Smart dependencies** - Fields update automatically based on your selections
-
-**Included Example Templates:**
-| Template | Description |
-|----------|-------------|
-| **existing_vpc_resources** | Base AWS infrastructure: Management VPC, Transit Gateway, spoke VPCs |
-| **autoscale_template** | Elastic FortiGate cluster with Gateway Load Balancer |
-| **ha_pair** | Fixed Active-Passive FortiGate cluster with FGCP |
-
-See the [Annotation Reference](../6_templates/5_5_annotations/) to learn how to add UI support to your own templates.
-
----
 
 ## Prerequisites
 
@@ -39,7 +15,7 @@ Before using the UI:
 
 1. **Python 3.11+** installed
 2. **Node.js 18+** installed
-3. **AWS credentials** - Required for resource discovery (see [AWS Credentials](#aws-credentials) below)
+3. **AWS CLI** installed and configured with at least one profile
 4. **Repository cloned**:
    ```bash
    git clone https://github.com/FortinetCloudCSE/fortinet-ui-terraform.git
@@ -48,11 +24,20 @@ Before using the UI:
 
 ---
 
-## Starting the UI
+## Quick Start
 
-### Quick Start (Recommended)
+### First Time Setup
 
-Use the automated restart script that handles both backend and frontend:
+Run the setup script to install Python and Node.js dependencies:
+
+```bash
+cd ui
+./SETUP.sh
+```
+
+### Start the UI
+
+Use the restart script to start both backend and frontend:
 
 ```bash
 cd ui
@@ -85,74 +70,105 @@ URLs:
    API Docs: http://127.0.0.1:8000/docs
 ```
 
-{{% notice tip %}}
-**First Time Setup**
-
-If this is your first time running the UI, run the setup script first:
-```bash
-cd ui
-./SETUP.sh
-```
-This installs Python and Node.js dependencies automatically.
-{{% /notice %}}
-
-### Manual Start (Alternative)
-
-If you prefer to start services manually in separate terminals:
-
-**Terminal 1 - Backend:**
-```bash
-cd ui/backend
-.venv/bin/uvicorn app.main:app --reload --port 8000
-```
-
-**Terminal 2 - Frontend:**
-```bash
-cd ui/frontend
-npm run dev
-```
-
-### Access the UI
-
-Open your browser and navigate to:
-
-```
-http://localhost:3000
-```
-
-You should see the Terraform Configuration UI.
+Open http://localhost:3000 in your browser.
 
 ---
 
 ## AWS Credentials
 
-The UI requires AWS credentials to discover AWS resources (regions, AZs, key pairs). See **[AWS Credentials](2_0_aws_credentials/)** for detailed setup instructions.
+The UI requires AWS credentials to discover resources (regions, availability zones, key pairs, VPCs, Transit Gateways). Without credentials, you'll need to manually type these values.
 
-**Quick options:**
-- **SSO users**: Use the `aws_login.sh` script
-- **IAM users**: Use the `aws_static_login.sh` script
-- **Automatic**: Credentials in `~/.aws/credentials` are picked up automatically
+### SSO Users (Recommended)
+
+Use the `aws_login.sh` script in the `sso_login/` directory:
+
+```bash
+source sso_login/aws_login.sh [profile] [backend_url]
+```
+
+**Examples:**
+```bash
+# Login with default profile (40netse) to default backend (http://127.0.0.1:8001)
+source sso_login/aws_login.sh
+
+# Login with specific profile
+source sso_login/aws_login.sh my-aws-profile
+
+# Login with specific profile and custom backend URL
+source sso_login/aws_login.sh my-aws-profile http://localhost:8000
+```
+
+The script:
+1. Authenticates via AWS SSO
+2. Exports credentials to your shell environment
+3. Sends credentials to the UI backend
+
+{{% notice tip %}}
+Use `source` (not just `./`) so credentials are exported to your current shell.
+{{% /notice %}}
+
+### IAM Users (Static Credentials)
+
+Use the `aws_static_login.sh` script for IAM users with access keys:
+
+```bash
+source sso_login/aws_static_login.sh [profile] [backend_url]
+```
+
+**Examples:**
+```bash
+# Load default profile
+source sso_login/aws_static_login.sh
+
+# Load specific profile
+source sso_login/aws_static_login.sh my-profile
+```
+
+### Verify Credentials
+
+Check that credentials are working:
+
+```bash
+curl http://localhost:8000/api/aws/credentials/status
+```
+
+Response:
+```json
+{
+  "valid": true,
+  "account": "123456789012",
+  "arn": "arn:aws:iam::123456789012:user/example",
+  "source": "session",
+  "message": "AWS credentials are valid"
+}
+```
 
 ---
 
 ## Using the UI
 
-The UI workflow consists of three main steps:
+The UI workflow consists of three steps:
 
-1. **Configure** - Fill out the form fields
-2. **Generate** - Generate the terraform.tfvars file
-3. **Deploy** - Download or save directly to the template directory
+### 1. Select Template
 
-The following sections provide detailed instructions for configuring each template.
+Choose a template from the dropdown:
+- **existing_vpc_resources** - Base infrastructure (deploy first)
+- **autoscale_template** - Elastic FortiGate cluster with GWLB
+- **ha_pair** - Fixed Active-Passive FortiGate cluster
 
----
+### 2. Configure
 
-## Documentation Sections
+Fill out the form fields. The UI provides:
+- **Dynamic dropdowns** - AWS regions, AZs, and key pairs populated from your account
+- **Field validation** - Real-time validation prevents configuration errors
+- **Smart dependencies** - Fields update automatically based on your selections
+- **Grouped sections** - Related options organized into collapsible sections
 
-- **[AWS Credentials](2_0_aws_credentials/)** - Configure AWS credentials for resource discovery
-- **[Configuring existing_vpc_resources](2_1_existing_vpc_resources/)** - Step-by-step guide for base infrastructure
-- **[Configuring autoscale_template](2_2_autoscale_template/)** - Step-by-step guide for AutoScale deployment
-- **[Configuring ha_pair](2_3_ha_pair/)** - Step-by-step guide for HA Pair deployment
+### 3. Generate and Deploy
+
+Click **Generate** to create the `terraform.tfvars` file, then either:
+- **Download** - Save the file locally
+- **Save to Template** - Write directly to the template directory
 
 ---
 
@@ -175,8 +191,6 @@ cd ui/backend
 uv sync
 ```
 
----
-
 ### Frontend Won't Start
 
 **Error:** `command not found: npm`
@@ -191,37 +205,26 @@ cd ui/frontend
 npm install
 ```
 
----
+### AWS Dropdowns Empty
 
-### CORS Errors
+**Symptom:** Region, AZ, and key pair dropdowns are empty or show errors.
 
-**Error:** Browser console shows CORS policy errors
+**Solutions:**
 
-**Solution:** Verify backend CORS configuration includes frontend URL:
+1. Check credential status:
+   ```bash
+   curl http://localhost:8000/api/aws/credentials/status
+   ```
 
-Edit `ui/backend/app/config.py`:
-```python
-cors_origins: List[str] = [
-    "http://localhost:3000",  # <-- Must match frontend URL
-    "http://localhost:3000"
-]
-```
+2. If using SSO, ensure session is active:
+   ```bash
+   source sso_login/aws_login.sh your-profile
+   ```
 
----
-
-### AWS Credentials Not Working
-
-**Symptom:** Dropdowns for regions, AZs, and key pairs are empty or show errors
-
-See **[AWS Credentials Troubleshooting](2_0_aws_credentials/#troubleshooting)** for solutions.
+3. If credentials expired, re-run the login script.
 
 ---
 
 ## Next Steps
 
-Choose the template you want to configure:
-
-1. **Start with [existing_vpc_resources](2_1_existing_vpc_resources/)** - Required first step for all deployments
-2. Then configure either:
-   - **[autoscale_template](2_2_autoscale_template/)** - For elastic autoscaling with GWLB
-   - **[ha_pair](2_3_ha_pair/)** - For fixed Active-Passive HA deployment
+See **[Example Templates](../3_example_templates/)** for step-by-step configuration guides for each template.

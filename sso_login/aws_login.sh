@@ -16,8 +16,8 @@
 #   3. POST credentials to UI backend (if reachable)
 
 # Default profile and backend URL
-DEFAULT_PROFILE="my_profile"
-DEFAULT_BACKEND_URL="http://127.0.0.1:8000"
+DEFAULT_PROFILE="40netse"
+DEFAULT_BACKEND_URL="http://127.0.0.1:8001"
 
 # Use arguments or fallback to defaults
 PROFILE_NAME="${1:-$DEFAULT_PROFILE}"
