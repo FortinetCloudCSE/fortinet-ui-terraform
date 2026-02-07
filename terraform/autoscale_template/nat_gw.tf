@@ -1,11 +1,13 @@
 locals {
-  nat_gw_subnet_az1_name   = "${var.cp}-${var.env}-inspection-natgw-az1-subnet"
-  nat_gw_subnet_az2_name   = "${var.cp}-${var.env}-inspection-natgw-az2-subnet"
+  # Fortinet-Role tag patterns for NAT Gateway subnets
+  # Format: {cp}-{env}-inspection-natgw-{az}
+  nat_gw_subnet_az1_name   = "${var.cp}-${var.env}-inspection-natgw-az1"
+  nat_gw_subnet_az2_name   = "${var.cp}-${var.env}-inspection-natgw-az2"
   enable_nat_gateway       = length(data.aws_subnet.inspection_nat_gw_subnet_az1) > 0 ? true : false
 }
 data "aws_subnet" "inspection_nat_gw_subnet_az1" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.nat_gw_subnet_az1_name]
   }
   filter {
@@ -16,7 +18,7 @@ data "aws_subnet" "inspection_nat_gw_subnet_az1" {
 }
 data "aws_subnet" "inspection_nat_gw_subnet_az2" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.nat_gw_subnet_az2_name]
   }
   filter {

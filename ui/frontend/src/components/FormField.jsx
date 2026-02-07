@@ -74,6 +74,37 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, templa
             }
             break;
 
+          case 'aws-fortinet-resource':
+            // Tag-based resource discovery using Fortinet-Role tags
+            // Requires: field.tag_pattern, field.tag_resource_type
+            // Pattern placeholders: {cp}, {env}, {region}, {az1}, {az2}
+            if (awsCredentialsValid && field.tag_pattern && field.tag_resource_type) {
+              const tagKey = field.tag_key || 'Fortinet-Role';
+              // Replace placeholders in tag pattern with config values
+              let tagValue = field.tag_pattern
+                .replace('{cp}', config.cp || '')
+                .replace('{env}', config.env || '')
+                .replace('{region}', config.aws_region || '')
+                .replace('{az1}', config.availability_zone_1 || '')
+                .replace('{az2}', config.availability_zone_2 || '');
+
+              if (config.aws_region && config.cp && config.env) {
+                const resource = await api.aws.discoverResourceByTag(
+                  config.aws_region,
+                  tagKey,
+                  tagValue,
+                  field.tag_resource_type
+                );
+                if (resource) {
+                  optionsList = [{
+                    value: resource.resource_id,
+                    label: `${resource.name || resource.resource_id} (${tagValue})`
+                  }];
+                }
+              }
+            }
+            break;
+
           case 'static':
             if (field.options) {
               // Parse options format: "value1|Label 1,value2|Label 2"

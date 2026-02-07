@@ -26,28 +26,36 @@ locals {
   dedicated_mgmt = var.enable_dedicated_management_vpc ? "-wdm" : var.enable_dedicated_management_eni ? "-wdm-eni" : ""
   fgt_config_file           = "./${var.firewall_policy_mode}${local.dedicated_mgmt}-${var.base_config_file}"
   management_device_index   = var.firewall_policy_mode == "2-arm" ? 2 : 1
+
+  # Fortinet-Role tag patterns for resource discovery
+  # Format: {cp}-{env}-{resource-type}-{details}
   management_vpc            = "${var.cp}-${var.env}-management-vpc"
   inspection_vpc            = "${var.cp}-${var.env}-inspection-vpc"
   east_vpc                  = "${var.cp}-${var.env}-east-vpc"
   west_vpc                  = "${var.cp}-${var.env}-west-vpc"
-  inspection_public_az1     = "${var.cp}-${var.env}-inspection-public-az1-subnet"
-  inspection_public_az2     = "${var.cp}-${var.env}-inspection-public-az2-subnet"
-  inspection_gwlbe_az1      = "${var.cp}-${var.env}-inspection-gwlbe-az1-subnet"
-  inspection_gwlbe_az2      = "${var.cp}-${var.env}-inspection-gwlbe-az2-subnet"
-  inspection_private_az1    = "${var.cp}-${var.env}-inspection-private-az1-subnet"
-  inspection_private_az2    = "${var.cp}-${var.env}-inspection-private-az2-subnet"
+  inspection_igw            = "${var.cp}-${var.env}-inspection-igw"
+  inspection_public_az1     = "${var.cp}-${var.env}-inspection-public-az1"
+  inspection_public_az2     = "${var.cp}-${var.env}-inspection-public-az2"
+  inspection_gwlbe_az1      = "${var.cp}-${var.env}-inspection-gwlbe-az1"
+  inspection_gwlbe_az2      = "${var.cp}-${var.env}-inspection-gwlbe-az2"
+  inspection_private_az1    = "${var.cp}-${var.env}-inspection-private-az1"
+  inspection_private_az2    = "${var.cp}-${var.env}-inspection-private-az2"
+  inspection_tgw_attachment = "${var.cp}-${var.env}-inspection-tgw-attachment"
+  tgw                       = "${var.cp}-${var.env}-tgw"
+  tgw_east_rtb              = "${var.cp}-${var.env}-tgw-east-rtb"
+  tgw_west_rtb              = "${var.cp}-${var.env}-tgw-west-rtb"
 }
 
 locals {
-  management_public_az1                = "${var.cp}-${var.env}-management-public-az1-subnet"
-  management_public_az2                = "${var.cp}-${var.env}-management-public-az2-subnet"
-  inspection_management_az1            = "${var.cp}-${var.env}-inspection-management-az1-subnet"
-  inspection_management_az2            = "${var.cp}-${var.env}-inspection-management-az2-subnet"
+  management_public_az1                = "${var.cp}-${var.env}-management-public-az1"
+  management_public_az2                = "${var.cp}-${var.env}-management-public-az2"
+  inspection_management_az1            = "${var.cp}-${var.env}-inspection-management-az1"
+  inspection_management_az2            = "${var.cp}-${var.env}-inspection-management-az2"
 }
 data "aws_vpc" "management_vpc" {
   count = var.enable_dedicated_management_vpc ? 1 : 0
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.management_vpc]
   }
   filter {
@@ -57,14 +65,14 @@ data "aws_vpc" "management_vpc" {
 }
 data "aws_vpcs"  "check_ew_vpcs" {
     filter {
-        name   = "tag:Name"
+        name   = "tag:Fortinet-Role"
         values = [local.east_vpc, local.west_vpc]
     }
 }
 data "aws_vpc" "east_vpc" {
   count = length(data.aws_vpcs.check_ew_vpcs.ids) > 0 ? 1 : 0
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.east_vpc]
   }
   filter {
@@ -75,7 +83,7 @@ data "aws_vpc" "east_vpc" {
 data "aws_vpc" "west_vpc" {
   count = length(data.aws_vpcs.check_ew_vpcs.ids) > 0 ? 1 : 0
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.west_vpc]
   }
   filter {
@@ -86,8 +94,8 @@ data "aws_vpc" "west_vpc" {
 data "aws_ec2_transit_gateway_route_table" "east_tgw_route_table" {
   count = length(data.aws_vpcs.check_ew_vpcs.ids) > 0 ? 1 : 0
   filter {
-    name   = "tag:Name"
-    values = ["${var.cp}-${var.env}-east-tgw-rtb"]
+    name   = "tag:Fortinet-Role"
+    values = [local.tgw_east_rtb]
   }
   filter {
     name   = "state"
@@ -97,8 +105,8 @@ data "aws_ec2_transit_gateway_route_table" "east_tgw_route_table" {
 data "aws_ec2_transit_gateway_route_table" "west_tgw_route_table" {
   count = length(data.aws_vpcs.check_ew_vpcs.ids) > 0 ? 1 : 0
   filter {
-    name   = "tag:Name"
-    values = ["${var.cp}-${var.env}-west-tgw-rtb"]
+    name   = "tag:Fortinet-Role"
+    values = [local.tgw_west_rtb]
   }
   filter {
     name   = "state"
@@ -107,8 +115,8 @@ data "aws_ec2_transit_gateway_route_table" "west_tgw_route_table" {
 }
 data "aws_ec2_transit_gateway_vpc_attachment" "inspection_tgw_attachment" {
   filter {
-    name   = "tag:Name"
-    values = ["${var.cp}-${var.env}-inspection-tgw-attachment"]
+    name   = "tag:Fortinet-Role"
+    values = [local.inspection_tgw_attachment]
   }
   filter {
     name   = "state"
@@ -118,7 +126,7 @@ data "aws_ec2_transit_gateway_vpc_attachment" "inspection_tgw_attachment" {
 data "aws_subnet" "management_public_subnet_az1" {
   count = var.enable_dedicated_management_vpc ? 1 : 0
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.management_public_az1]
   }
   filter {
@@ -129,7 +137,7 @@ data "aws_subnet" "management_public_subnet_az1" {
 data "aws_subnet" "management_public_subnet_az2" {
   count = var.enable_dedicated_management_vpc ? 1 : 0
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.management_public_az2]
   }
   filter {
@@ -139,7 +147,7 @@ data "aws_subnet" "management_public_subnet_az2" {
 }
 data "aws_vpc" "inspection_vpc" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_vpc]
   }
   filter {
@@ -152,14 +160,14 @@ locals {
 }
 data "aws_internet_gateway" "inspection_igw" {
   filter {
-    name   = "tag:Name"
-    values = ["${var.cp}-${var.env}-inspection-igw"]
+    name   = "tag:Fortinet-Role"
+    values = [local.inspection_igw]
   }
 }
 data "aws_ec2_transit_gateway" "existing_tgw" {
   filter {
-    name   = "tag:Name"
-    values = ["${var.cp}-${var.env}-tgw"]
+    name   = "tag:Fortinet-Role"
+    values = [local.tgw]
   }
   filter {
     name   = "state"
@@ -168,7 +176,7 @@ data "aws_ec2_transit_gateway" "existing_tgw" {
 }
 data "aws_subnet" "inspection_public_subnet_az1" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_public_az1]
   }
   filter {
@@ -179,7 +187,7 @@ data "aws_subnet" "inspection_public_subnet_az1" {
 }
 data "aws_subnet" "inspection_public_subnet_az2" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_public_az2]
   }
   filter {
@@ -190,7 +198,7 @@ data "aws_subnet" "inspection_public_subnet_az2" {
 }
 data "aws_subnet" "inspection_gwlbe_subnet_az1" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_gwlbe_az1]
   }
   filter {
@@ -201,7 +209,7 @@ data "aws_subnet" "inspection_gwlbe_subnet_az1" {
 }
 data "aws_subnet" "inspection_gwlbe_subnet_az2" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_gwlbe_az2]
   }
   filter {
@@ -212,7 +220,7 @@ data "aws_subnet" "inspection_gwlbe_subnet_az2" {
 }
 data "aws_subnet" "inspection_private_subnet_az1" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_private_az1]
   }
   filter {
@@ -223,7 +231,7 @@ data "aws_subnet" "inspection_private_subnet_az1" {
 }
 data "aws_subnet" "inspection_private_subnet_az2" {
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_private_az2]
   }
   filter {
@@ -236,7 +244,7 @@ data "aws_subnet" "inspection_management_subnet_az1" {
   depends_on = [data.aws_vpc.inspection_vpc]
   count = var.enable_dedicated_management_eni ? 1 : 0
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_management_az1]
   }
   filter {
@@ -249,7 +257,7 @@ data "aws_subnet" "inspection_management_subnet_az2" {
   depends_on = [data.aws_vpc.inspection_vpc]
   count = var.enable_dedicated_management_eni ? 1 : 0
   filter {
-    name   = "tag:Name"
+    name   = "tag:Fortinet-Role"
     values = [local.inspection_management_az2]
   }
   filter {

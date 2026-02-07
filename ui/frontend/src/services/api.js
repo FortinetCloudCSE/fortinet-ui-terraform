@@ -95,6 +95,36 @@ export const api = {
     getVpcs: async (region) => {
       return apiFetch(`/api/aws/vpcs?region=${region}`);
     },
+
+    /**
+     * Discover a resource by Fortinet-Role tag
+     * @param {string} region - AWS region
+     * @param {string} tagKey - Tag key (e.g., "Fortinet-Role")
+     * @param {string} tagValue - Tag value (e.g., "acme-test-inspection-vpc")
+     * @param {string} resourceType - Resource type (vpc, subnet, igw, tgw, tgw-attachment, tgw-rtb)
+     * @returns {Promise<Object|null>} Tagged resource or null
+     */
+    discoverResourceByTag: async (region, tagKey, tagValue, resourceType) => {
+      return apiFetch(`/api/aws/resources/by-tag?region=${region}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          tag_key: tagKey,
+          tag_value: tagValue,
+          resource_type: resourceType,
+        }),
+      });
+    },
+
+    /**
+     * Discover all Fortinet-Role tagged resources for a cp/env prefix
+     * @param {string} region - AWS region
+     * @param {string} cp - Customer prefix
+     * @param {string} env - Environment name
+     * @returns {Promise<Object>} All discovered resources grouped by type
+     */
+    discoverFortinetResources: async (region, cp, env) => {
+      return apiFetch(`/api/aws/resources/by-fortinet-role?region=${region}&cp=${cp}&env=${env}`);
+    },
   },
 
   // Terraform API methods

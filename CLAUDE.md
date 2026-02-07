@@ -19,6 +19,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Run `./verify_scripts/verify_all.sh --verify all` from `terraform/existing_vpc_resources/` to verify infrastructure AND generate updated network diagrams
 - The `generate_network_diagram.sh` script can also be run standalone to regenerate diagrams without running full verification
 
+## Recent Session Context (Feb 2026)
+
+**Documentation Reorganization Completed:**
+- Restructured content hierarchy: moved `5_Architecture/` and `6_Templates/` into `3_Example_Templates/`
+- Deleted obsolete sections: `3_Overview/`, `4_Licensing/`
+- Added "Working in the UI" developer guide (`2_Getting_Started/2_1_Working_in_the_UI/`) with 8 subpages covering:
+  - Annotation reference, porting templates, backend APIs, parsers, cloud providers, frontend, testing, troubleshooting
+- Moved images into page bundles for Hugo compatibility (images in same directory as markdown)
+- All changes merged via PR #3
+
+**Current Branch:** `update_content_continuing` - ready for continued documentation work
+
 ## Project Overview
 
 This repository contains the **FortiGate Autoscale Simplified Template** - a Terraform-based solution that simplifies the deployment of FortiGate autoscale groups in AWS. It serves as a wrapper around Fortinet's enterprise-grade [terraform-aws-cloud-modules](https://github.com/fortinetdev/terraform-aws-cloud-modules) to reduce deployment complexity while maintaining architectural flexibility.
@@ -125,6 +137,27 @@ Located in `ui/` directory:
   - Template dropdown includes all three templates
   - Form groups with field validation and conditional visibility
 
+### UI Annotation System
+
+The UI dynamically generates configuration forms by reading annotations in `terraform.tfvars.example` files. Key annotation tags:
+
+| Tag | Description | Example |
+|-----|-------------|---------|
+| `@label` | Display name in form | `# @label AWS Region` |
+| `@description` | Help text | `# @description Select the deployment region` |
+| `@type` | Input type: text, password, number, checkbox, select, list | `# @type select` |
+| `@options` | Values for select | `# @options us-east-1, us-west-2` |
+| `@default` | Pre-filled value | `# @default us-west-2` |
+| `@required` | Required field | `# @required true` |
+| `@group` | Groups related fields | `# @group Network Settings` |
+| `@depends` | Conditional visibility | `# @depends enable_tgw=true` |
+| `@inherit` | Copy from another template | `# @inherit existing_vpc_resources.cp` |
+
+**Adding a new template to UI:**
+1. Create `terraform.tfvars.example` with annotations
+2. Backend auto-detects templates with example files
+3. See `content/2_Getting_Started/2_1_Working_in_the_UI/` for full developer guide
+
 ### AWS Credentials for UI
 
 The UI backend requires AWS credentials to discover resources. Two authentication methods are supported:
@@ -162,11 +195,60 @@ The `aws_login.sh` script automatically handles both methods - it exports creden
 ### Documentation
 
 The `content/` directory contains Hugo-formatted markdown for the workshop documentation:
-- `1_Introduction/` - Overview and prerequisites
-- `2_Overview/` - Architecture and key benefits
-- `3_Licensing/` - BYOL, PAYG, and FortiFlex licensing models
-- `4_Solution_Components/` - In-depth architectural explanations
-- `5_Templates/` - Deployment procedures and configuration examples
+
+```
+content/
+├── 1_Introduction/           # Overview and prerequisites
+├── 2_Getting_Started/        # Quick start and UI setup
+│   ├── _index.md             # AWS credentials, quick start
+│   └── 2_1_Working_in_the_UI/  # Developer guide for extending the UI
+│       ├── _index.md                  # Architecture overview, starting the UI
+│       ├── 2_1_1_annotations.md       # UI annotation tags for tfvars.example
+│       ├── 2_1_2_porting_templates.md # Adding new templates to UI
+│       ├── 2_1_3_backend_apis.md      # FastAPI endpoints
+│       ├── 2_1_4_parsers.md           # Template parsing
+│       ├── 2_1_5_cloud_providers.md   # AWS/Azure/GCP API integration
+│       ├── 2_1_6_frontend.md          # React components
+│       ├── 2_1_7_testing.md           # Testing guide
+│       └── 2_1_8_troubleshooting.md   # Common issues
+├── 3_Example_Templates/      # Template documentation with page bundles
+│   ├── 3_1_existing_vpc_resources/    # Base infrastructure template
+│   │   ├── _index.md
+│   │   ├── 3_1_existing_vpc_resources.md  # UI-based deployment
+│   │   ├── 3_3_manual_deployment.md       # CLI deployment
+│   │   ├── 3_4_operations.md              # Day 2 operations
+│   │   └── *.png                          # Images in page bundle
+│   ├── 3_2_autoscale_template/        # AutoScale template
+│   │   ├── _index.md
+│   │   ├── 3_1_autoscale.md               # UI-based deployment
+│   │   ├── 3_2_manual_deployment.md       # CLI deployment
+│   │   ├── 3_3_configuration.md           # Configuration options
+│   │   ├── 3_4_operation.md               # Day 2 operations
+│   │   ├── 3_5_reference.md               # Variable reference
+│   │   ├── Autoscale_Reference/           # Architecture deep-dives
+│   │   │   ├── 4_1_Internet_Egress/
+│   │   │   ├── 4_2_Firewall_Architecture/
+│   │   │   ├── 4_3_Management_Isolation/
+│   │   │   ├── 4_4_Licensing_Options/
+│   │   │   ├── 4_5_FortiManager_Integration/
+│   │   │   ├── 4_6_Autoscale_Group_Capacity/
+│   │   │   ├── 4_7_Primary_ScaleIn_Protection/
+│   │   │   ├── 4_8_Additional_Configuration/
+│   │   │   └── 4_9_Summary/
+│   │   └── *.png
+│   └── 3_3_ha_pair/                   # HA Pair template
+│       ├── _index.md
+│       ├── 3_1_ha_pair.md
+│       ├── 3_2_manual_deployment.md
+│       ├── 3_3_operations.md
+│       └── 3_4_troubleshooting.md
+└── pictures/                 # Shared images directory
+```
+
+**Documentation Conventions:**
+- Images are stored in page bundles (same directory as markdown) for Hugo compatibility
+- Deleted sections: `3_Overview/`, `4_Licensing/`, `5_Architecture/`, `6_Templates/` (content moved to 3_Example_Templates)
+- UI developer documentation is in `2_1_Working_in_the_UI/`
 
 ## Key Architectural Concepts
 
@@ -527,10 +609,12 @@ This runs a Docker container with the Hugo static site generator. The documentat
 
 ## Git Workflow
 
-Current branch: `add_ha`
+Current branch: `update_content_continuing`
 Main branch: `main`
 
-The repository uses feature branches for development. Current work involves adding HA (High Availability) capabilities to the templates.
+The repository uses feature branches for development. Recent work:
+- **PR #3 (merged)**: Reorganized documentation structure, added UI developer guide
+- **Current**: Continuing documentation updates and improvements
 
 ## Troubleshooting
 
