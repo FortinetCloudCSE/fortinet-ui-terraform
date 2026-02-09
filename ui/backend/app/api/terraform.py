@@ -39,9 +39,9 @@ class ConfigGenerateResponse(BaseModel):
     filename: str
 
 
-# Valid template names (AWS flat, GCP nested under gcp/)
+# Valid template names (namespaced by cloud provider)
 VALID_TEMPLATES = [
-    'existing_vpc_resources', 'autoscale_template', 'ha_pair',  # AWS
+    'aws/existing_vpc_resources', 'aws/autoscale_template', 'aws/ha_pair',  # AWS
     'gcp/existing_vpc_resources',  # GCP
 ]
 
@@ -54,7 +54,7 @@ def get_base_template(template: str) -> str:
     """
     if template.startswith('gcp/'):
         return 'gcp/existing_vpc_resources'
-    return 'existing_vpc_resources'
+    return 'aws/existing_vpc_resources'
 
 
 # Get path to terraform templates directory
@@ -70,7 +70,7 @@ def get_terraform_dir() -> Path:
 
 @router.get("/schema", response_model=ConfigSchema)
 async def get_config_schema(
-    template: str = Query(..., description="Template name (e.g., 'existing_vpc_resources')")
+    template: str = Query(..., description="Template name (e.g., 'aws/existing_vpc_resources')")
 ):
     """
     Get configuration schema for a Terraform template.
@@ -80,7 +80,7 @@ async def get_config_schema(
     and UI metadata.
 
     Args:
-        template: Template name (existing_vpc_resources or autoscale_template)
+        template: Template name (aws/existing_vpc_resources or aws/autoscale_template)
 
     Returns:
         Schema with groups and fields
@@ -199,7 +199,7 @@ async def load_configuration(
                 config = json.load(f)
 
         # If loading existing_vpc_resources, auto-populate management_cidr_sg with current public IP
-        if template == "existing_vpc_resources":
+        if template == "aws/existing_vpc_resources":
             if "management_cidr_sg" not in config or not config["management_cidr_sg"] or config["management_cidr_sg"] == "x.x.x.x/32":
                 try:
                     import requests
@@ -213,8 +213,8 @@ async def load_configuration(
 
         # If loading autoscale_template or ha_pair, inherit values from existing_vpc_resources
         inherited_fields = []
-        if template == "autoscale_template" or template == "ha_pair":
-            existing_vpc_config_file = terraform_dir / "existing_vpc_resources" / "ui_config.json"
+        if template == "aws/autoscale_template" or template == "aws/ha_pair":
+            existing_vpc_config_file = terraform_dir / "aws" / "existing_vpc_resources" / "ui_config.json"
             if existing_vpc_config_file.exists():
                 with open(existing_vpc_config_file, 'r') as f:
                     existing_config = json.load(f)
@@ -305,13 +305,13 @@ async def load_configuration(
         # Return message based on whether config file existed
         if not config_file.exists():
             message = "No saved configuration found"
-            if (template == "autoscale_template" or template == "ha_pair") and config:
+            if (template == "aws/autoscale_template" or template == "aws/ha_pair") and config:
                 message += " (inherited defaults from existing_vpc_resources)"
             return {
                 "success": False,
                 "message": message,
                 "config": config,
-                "inherited_fields": inherited_fields if (template == "autoscale_template" or template == "ha_pair") else []
+                "inherited_fields": inherited_fields if (template == "aws/autoscale_template" or template == "aws/ha_pair") else []
             }
 
         logger.info(f"Loaded configuration from {config_file}")
@@ -320,7 +320,7 @@ async def load_configuration(
             "success": True,
             "message": "Configuration loaded successfully",
             "config": config,
-            "inherited_fields": inherited_fields if (template == "autoscale_template" or template == "ha_pair") else []
+            "inherited_fields": inherited_fields if (template == "aws/autoscale_template" or template == "aws/ha_pair") else []
         }
 
     except Exception as e:
@@ -446,7 +446,7 @@ async def validate_configuration(request: ConfigSaveRequest):
         errors = []
         warnings = []
 
-        if request.template == "autoscale_template":
+        if request.template == "aws/autoscale_template":
             result = validate_autoscale_config(request.config)
             errors.extend(result["errors"])
             warnings.extend(result["warnings"])
@@ -506,7 +506,7 @@ async def generate_tfvars(request: ConfigSaveRequest):
                     continue
 
                 # Skip all FortiManager/FortiAnalyzer fields if resource is disabled
-                if request.template == "existing_vpc_resources":
+                if request.template == "aws/existing_vpc_resources":
                     fortimanager_fields = [
                         "enable_fortimanager_public_ip", "fortimanager_instance_type",
                         "fortimanager_os_version", "fortimanager_host_ip",
@@ -535,7 +535,7 @@ async def generate_tfvars(request: ConfigSaveRequest):
                         continue
 
                 # Skip fields based on license model (autoscale_template)
-                if request.template == "autoscale_template":
+                if request.template == "aws/autoscale_template":
                     license_model = request.config.get("autoscale_license_model", "hybrid")
 
                     # BYOL fields - skip if using on_demand only
@@ -569,7 +569,7 @@ async def generate_tfvars(request: ConfigSaveRequest):
                 value = request.config[field_name]
 
                 # Auto-generate attach_to_tgw_name if empty or using default value
-                if field_name == "attach_to_tgw_name" and request.template == "existing_vpc_resources":
+                if field_name == "attach_to_tgw_name" and request.template == "aws/existing_vpc_resources":
                     cp = request.config.get("cp", "")
                     env = request.config.get("env", "")
                     # If value is empty or still has default "acme-test-tgw", regenerate it
@@ -626,17 +626,17 @@ async def generate_tfvars(request: ConfigSaveRequest):
                 hidden_fields.append('acl = "private"')
 
         # Template-specific hidden fields
-        if request.template == "existing_vpc_resources":
+        if request.template == "aws/existing_vpc_resources":
             # Convert create_nat_gateway_subnets checkbox to access_internet_mode
             create_nat_gw = request.config.get("create_nat_gateway_subnets", False)
             access_mode = "nat_gw" if create_nat_gw else "eip"
             hidden_fields.append(f'access_internet_mode = "{access_mode}"')
 
-        if request.template == "autoscale_template":
+        if request.template == "aws/autoscale_template":
             # acl is required by autoscale_template but not shown in UI
             hidden_fields.append('acl = "private"')
 
-        if request.template == "ha_pair":
+        if request.template == "aws/ha_pair":
             # acl is required by ha_pair but not shown in UI
             hidden_fields.append('acl = "private"')
 
@@ -702,7 +702,7 @@ async def save_tfvars_to_template(request: ConfigSaveRequest):
                     continue
 
                 # Skip all FortiManager/FortiAnalyzer fields if resource is disabled
-                if request.template == "existing_vpc_resources":
+                if request.template == "aws/existing_vpc_resources":
                     fortimanager_fields = [
                         "enable_fortimanager_public_ip", "fortimanager_instance_type",
                         "fortimanager_os_version", "fortimanager_host_ip",
@@ -731,7 +731,7 @@ async def save_tfvars_to_template(request: ConfigSaveRequest):
                         continue
 
                 # Skip fields based on license model (autoscale_template)
-                if request.template == "autoscale_template":
+                if request.template == "aws/autoscale_template":
                     license_model = request.config.get("autoscale_license_model", "hybrid")
 
                     # BYOL fields - skip if using on_demand only
@@ -765,7 +765,7 @@ async def save_tfvars_to_template(request: ConfigSaveRequest):
                 value = request.config[field_name]
 
                 # Auto-generate attach_to_tgw_name if empty or using default value
-                if field_name == "attach_to_tgw_name" and request.template == "existing_vpc_resources":
+                if field_name == "attach_to_tgw_name" and request.template == "aws/existing_vpc_resources":
                     cp = request.config.get("cp", "")
                     env = request.config.get("env", "")
                     # If value is empty or still has default "acme-test-tgw", regenerate it
@@ -822,17 +822,17 @@ async def save_tfvars_to_template(request: ConfigSaveRequest):
                 hidden_fields.append('acl = "private"')
 
         # Template-specific hidden fields
-        if request.template == "existing_vpc_resources":
+        if request.template == "aws/existing_vpc_resources":
             # Convert create_nat_gateway_subnets checkbox to access_internet_mode
             create_nat_gw = request.config.get("create_nat_gateway_subnets", False)
             access_mode = "nat_gw" if create_nat_gw else "eip"
             hidden_fields.append(f'access_internet_mode = "{access_mode}"')
 
-        if request.template == "autoscale_template":
+        if request.template == "aws/autoscale_template":
             # acl is required by autoscale_template but not shown in UI
             hidden_fields.append('acl = "private"')
 
-        if request.template == "ha_pair":
+        if request.template == "aws/ha_pair":
             # acl is required by ha_pair but not shown in UI
             hidden_fields.append('acl = "private"')
 
@@ -864,7 +864,7 @@ async def list_license_files(template: str = Query(...)):
     List all .lic files in the template directory.
 
     Args:
-        template: Template name (e.g., "existing_vpc_resources")
+        template: Template name (e.g., 'aws/existing_vpc_resources')
 
     Returns:
         List of license file paths relative to template directory
@@ -977,7 +977,7 @@ async def build_infrastructure(
     5. verify_all.sh --verify all
 
     Args:
-        template: Template name (e.g., "existing_vpc_resources")
+        template: Template name (e.g., 'aws/existing_vpc_resources')
 
     Returns:
         Streaming response with command output
@@ -1051,7 +1051,7 @@ async def build_infrastructure(
                 yield line
 
             # Steps 4 & 5: Verification scripts (only for existing_vpc_resources)
-            if template == "existing_vpc_resources":
+            if template == "aws/existing_vpc_resources":
                 verify_scripts_dir = template_dir / "verify_scripts"
 
                 if verify_scripts_dir.exists():
@@ -1113,7 +1113,7 @@ async def build_step(
     Run a single Terraform build step with real-time output streaming.
 
     Args:
-        template: Template name (e.g., "existing_vpc_resources")
+        template: Template name (e.g., 'aws/existing_vpc_resources')
         step: Step to run (init, plan, apply, verify_data, verify_all)
 
     Returns:
@@ -1177,7 +1177,7 @@ async def build_step(
                     yield line
 
             elif step == "verify_data":
-                if template == "existing_vpc_resources":
+                if template == "aws/existing_vpc_resources":
                     verify_scripts_dir = template_dir / "verify_scripts"
                     gen_script = verify_scripts_dir / "generate_verification_data.sh"
                     if gen_script.exists():
@@ -1189,10 +1189,10 @@ async def build_step(
                     else:
                         yield "Error: generate_verification_data.sh not found\n"
                 else:
-                    yield "Error: Verification scripts only available for existing_vpc_resources\n"
+                    yield "Error: Verification scripts only available for aws/existing_vpc_resources\n"
 
             elif step == "verify_all":
-                if template == "existing_vpc_resources":
+                if template == "aws/existing_vpc_resources":
                     verify_scripts_dir = template_dir / "verify_scripts"
                     verify_script = verify_scripts_dir / "verify_all.sh"
                     if verify_script.exists():
@@ -1204,7 +1204,7 @@ async def build_step(
                     else:
                         yield "Error: verify_all.sh not found\n"
                 else:
-                    yield "Error: Verification scripts only available for existing_vpc_resources\n"
+                    yield "Error: Verification scripts only available for aws/existing_vpc_resources\n"
 
             else:
                 yield f"Error: Invalid step '{step}'. Valid steps: init, plan, apply, destroy, verify_data, verify_all\n"

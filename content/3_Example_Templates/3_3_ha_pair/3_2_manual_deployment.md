@@ -9,7 +9,7 @@ weight: 63
 ### Step 1: Deploy existing_vpc_resources
 
 ```bash
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 
 # Copy and edit configuration
 cp terraform.tfvars.example terraform.tfvars
@@ -40,7 +40,7 @@ terraform output
 ### Step 2: Configure ha_pair Template
 
 ```bash
-cd terraform/ha_pair
+cd terraform/aws/ha_pair
 
 # Copy example configuration
 cp terraform.tfvars.example terraform.tfvars

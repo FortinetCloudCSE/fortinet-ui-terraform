@@ -443,13 +443,13 @@ Choose how to use the generated file:
 3. Copy to terraform directory:
    ```bash
    cp ~/Downloads/existing_vpc_resources.tfvars \
-     terraform/existing_vpc_resources/terraform.tfvars
+     terraform/aws/existing_vpc_resources/terraform.tfvars
    ```
 
 ### Option B: Save Directly to Template
 
 1. Click **Save to Template**
-2. Confirmation: "terraform.tfvars saved to: terraform/existing_vpc_resources/terraform.tfvars"
+2. Confirmation: "terraform.tfvars saved to: terraform/aws/existing_vpc_resources/terraform.tfvars"
 3. Ready to deploy!
 
 {{%/* notice note */%}}
@@ -468,7 +468,7 @@ Show:
 Now that your terraform.tfvars is configured:
 
 ```bash
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 
 # Initialize Terraform
 terraform init

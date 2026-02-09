@@ -1,6 +1,6 @@
 # Verify the existing VPC resources using a bash script and AWS CLI commands. My credentials should be in the env.
 
-## Read terraform/existing_vpc_resources/terraform.tfvars
+## Read terraform/aws/existing_vpc_resources/terraform.tfvars
 
 ## Go through the following checks and print a label and passed/failed for each check
 

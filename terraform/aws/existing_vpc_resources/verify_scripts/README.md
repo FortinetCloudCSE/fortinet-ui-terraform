@@ -123,7 +123,7 @@ The `verification_data` Terraform output includes:
 
 ```bash
 # View all outputs
-cd /path/to/terraform/existing_vpc_resources
+cd /path/to/terraform/aws/existing_vpc_resources
 terraform output
 
 # View specific output

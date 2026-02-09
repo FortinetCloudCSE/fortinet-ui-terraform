@@ -214,7 +214,7 @@ Use this decision tree to determine which template(s) you need:
 
 ```bash
 # Step 1: Deploy existing_vpc_resources
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 cp terraform.tfvars.example terraform.tfvars
 # Edit: Enable all components (FortiManager, FortiAnalyzer, TGW, Spoke VPCs)
 terraform init && terraform apply
@@ -251,7 +251,7 @@ aws ec2 describe-transit-gateways --query 'TransitGateways[*].[Tags[?Key==`Name`
 # Note your production TGW name
 
 # Step 2: Deploy autoscale_template
-cd terraform/autoscale_template
+cd terraform/aws/autoscale_template
 cp terraform.tfvars.example terraform.tfvars
 # Edit: Set attach_to_tgw_name to production TGW
 #       Configure production-appropriate capacity
@@ -279,7 +279,7 @@ terraform init && terraform apply
 
 ```bash
 # Step 1: Deploy existing_vpc_resources (management only)
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 cp terraform.tfvars.example terraform.tfvars
 # Edit: enable_build_management_vpc = true
 #       enable_fortimanager = true
@@ -317,7 +317,7 @@ terraform init && terraform apply
 
 ```bash
 # Step 1: Deploy existing_vpc_resources with distributed VPCs
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 cp terraform.tfvars.example terraform.tfvars
 
 # Edit terraform.tfvars:

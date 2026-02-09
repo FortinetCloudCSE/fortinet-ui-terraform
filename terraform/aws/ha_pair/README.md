@@ -40,7 +40,7 @@ The HA pair template discovers existing resources created by `existing_vpc_resou
 
 Copy the example file and customize:
 ```bash
-cd terraform/ha_pair
+cd terraform/aws/ha_pair
 cp terraform.tfvars.example terraform.tfvars
 ```
 

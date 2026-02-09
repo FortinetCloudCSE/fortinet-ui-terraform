@@ -368,20 +368,20 @@ Show preview window with generated terraform.tfvars content
 3. Copy to terraform directory:
    ```bash
    cp ~/Downloads/ha_pair.tfvars \
-     terraform/ha_pair/terraform.tfvars
+     terraform/aws/ha_pair/terraform.tfvars
    ```
 
 ### Option B: Save Directly
 
 1. Click **Save to Template**
-2. Confirmation: "terraform.tfvars saved to: terraform/ha_pair/terraform.tfvars"
+2. Confirmation: "terraform.tfvars saved to: terraform/aws/ha_pair/terraform.tfvars"
 
 ---
 
 ## Step 15: Deploy with Terraform
 
 ```bash
-cd terraform/ha_pair
+cd terraform/aws/ha_pair
 
 # Initialize Terraform
 terraform init

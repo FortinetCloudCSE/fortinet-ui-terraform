@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Remind the user at the start of each session:**
 - The `verify_all.sh` script now automatically generates network diagram files (`logs/network_diagram.svg` and `logs/network_diagram.md`) at the end of the verification process
-- Run `./verify_scripts/verify_all.sh --verify all` from `terraform/existing_vpc_resources/` to verify infrastructure AND generate updated network diagrams
+- Run `./verify_scripts/verify_all.sh --verify all` from `terraform/aws/existing_vpc_resources/` to verify infrastructure AND generate updated network diagrams
 - The `generate_network_diagram.sh` script can also be run standalone to regenerate diagrams without running full verification
 
 ## Recent Session Context (Feb 2026)
@@ -44,9 +44,9 @@ The project includes:
 
 ### Terraform Templates
 
-Three main Terraform template directories exist under `terraform/`:
+Terraform templates are organized by cloud provider under `terraform/`. AWS templates reside under `terraform/aws/`:
 
-1. **`terraform/autoscale_template/`** - Core FortiGate autoscale deployment
+1. **`terraform/aws/autoscale_template/`** - Core FortiGate autoscale deployment
    - Wraps the upstream `terraform-aws-cloud-modules` module
    - Main entry point: `autoscale_group.tf` (module invocation)
    - Configuration abstraction: `easy_autoscale.tf` (data sources and locals)
@@ -55,7 +55,7 @@ Three main Terraform template directories exist under `terraform/`:
    - FortiGate configuration templates: `*-arm-*-fgt-conf.cfg` files (1-arm/2-arm modes)
    - License directory: `asg_license/` for BYOL license files
 
-2. **`terraform/ha_pair/`** - FortiGate HA Pair deployment (Active-Passive FGCP)
+2. **`terraform/aws/ha_pair/`** - FortiGate HA Pair deployment (Active-Passive FGCP)
    - Deploys a fixed Active-Passive FortiGate HA pair without GWLB
    - Main files:
      - `main.tf` - Provider configuration
@@ -80,7 +80,7 @@ Three main Terraform template directories exist under `terraform/`:
      - Automatic EIP/ENI reassignment on failover
      - Transit Gateway routing updates (removes management VPC routes, adds inspection VPC routes)
 
-3. **`terraform/existing_vpc_resources/`** - Supporting infrastructure for testing and deployment
+3. **`terraform/aws/existing_vpc_resources/`** - Supporting infrastructure for testing and deployment
    - Creates management VPCs, Transit Gateway, spoke VPCs, inspection VPC, distributed VPCs, and test instances
    - **Deployment Mode Selection**: Two mutually exclusive options
      - `enable_autoscale_deployment` (default: true) - Creates GWLB subnets for autoscale template
@@ -130,7 +130,7 @@ Located in `ui/` directory:
 - **Backend**: Python FastAPI application (`ui/backend/`)
   - `app/api/terraform.py` - Terraform configuration generation and validation
   - `app/api/aws.py` - AWS resource discovery (regions, AZs, keypairs, etc.)
-  - Supports three templates: `existing_vpc_resources`, `autoscale_template`, `ha_pair`
+  - Supports three AWS templates: `aws/existing_vpc_resources`, `aws/autoscale_template`, `aws/ha_pair`
   - Config inheritance: Both `autoscale_template` and `ha_pair` inherit base settings from `existing_vpc_resources`
 - **Frontend**: React application (`ui/frontend/`)
   - `src/components/TerraformConfig.jsx` - Main configuration UI component
@@ -298,8 +298,8 @@ This two-stage approach ensures spoke instances can bootstrap before FortiGates 
 When creating or updating network diagrams (SVG format) for this infrastructure, use the following layout:
 
 **Data Sources:**
-- Read `terraform/existing_vpc_resources/terraform.tfvars` for VPC CIDRs, subnet_bits, host IPs, region, AZs
-- Read `terraform/autoscale_template/terraform.tfvars` for firewall_policy_mode, enable_dedicated_management_vpc settings
+- Read `terraform/aws/existing_vpc_resources/terraform.tfvars` for VPC CIDRs, subnet_bits, host IPs, region, AZs
+- Read `terraform/aws/autoscale_template/terraform.tfvars` for firewall_policy_mode, enable_dedicated_management_vpc settings
 - Calculate subnet CIDRs using Terraform's cidrsubnet() logic
 - Calculate host IPs using cidrhost() logic
 - If user provides instance IP information (e.g., from AWS CLI or terraform output), include it in the diagram
@@ -414,7 +414,7 @@ The simplified template (`easy_autoscale.tf`) uses data sources to discover exis
 ### For existing_vpc_resources
 
 ```bash
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 
 terraform init
 cp terraform.tfvars.example terraform.tfvars
@@ -432,7 +432,7 @@ terraform apply
 ### For autoscale_template
 
 ```bash
-cd terraform/autoscale_template
+cd terraform/aws/autoscale_template
 
 terraform init
 cp terraform.tfvars.example terraform.tfvars
@@ -449,7 +449,7 @@ terraform apply
 ### For ha_pair
 
 ```bash
-cd terraform/ha_pair
+cd terraform/aws/ha_pair
 
 terraform init
 cp terraform.tfvars.example terraform.tfvars
@@ -468,10 +468,10 @@ terraform apply
 
 ```bash
 # Destroy in reverse order
-cd terraform/autoscale_template  # OR cd terraform/ha_pair
+cd terraform/aws/autoscale_template  # OR cd terraform/aws/ha_pair
 terraform destroy
 
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 terraform destroy
 ```
 
@@ -479,14 +479,14 @@ terraform destroy
 
 ### Primary Configuration Files
 
-- `terraform/existing_vpc_resources/terraform.tfvars.example` - Base infrastructure configuration
-- `terraform/autoscale_template/terraform.tfvars.example` - AutoScale configuration template
-- `terraform/ha_pair/terraform.tfvars.example` - HA Pair configuration template
+- `terraform/aws/existing_vpc_resources/terraform.tfvars.example` - Base infrastructure configuration
+- `terraform/aws/autoscale_template/terraform.tfvars.example` - AutoScale configuration template
+- `terraform/aws/ha_pair/terraform.tfvars.example` - HA Pair configuration template
 - All `.example` files should be copied to `terraform.tfvars` and customized
 
 ### FortiGate Configuration Templates
 
-**AutoScale Templates** - Located in `terraform/autoscale_template/`:
+**AutoScale Templates** - Located in `terraform/aws/autoscale_template/`:
 - `1-arm-fgt-conf.cfg` - Single interface mode
 - `2-arm-fgt-conf.cfg` - Dual interface mode
 - `1-arm-wdm-fgt-conf.cfg` - Single interface with dedicated management VPC
@@ -495,7 +495,7 @@ terraform destroy
 
 The correct template is selected automatically based on `firewall_policy_mode`, `enable_dedicated_management_vpc`, and `enable_dedicated_management_eni` variables.
 
-**HA Pair Templates** - Located in `terraform/ha_pair/config_templates/`:
+**HA Pair Templates** - Located in `terraform/aws/ha_pair/config_templates/`:
 - `primary-fortigate-userdata.tpl` - Primary FortiGate (priority 255, HA group master)
 - `secondary-fortigate-userdata.tpl` - Secondary FortiGate (priority 1, HA group slave)
 
@@ -508,7 +508,7 @@ Both templates configure:
 
 ### Linux Instance User-Data Templates
 
-Located in `terraform/existing_vpc_resources/config_templates/`:
+Located in `terraform/aws/existing_vpc_resources/config_templates/`:
 
 - **`jump-box-userdata.tpl`** - Management VPC jump box/bastion host
   - Basic system tools (sysstat, net-tools, awscli, apache2)
@@ -567,7 +567,7 @@ These must match between templates:
 ### FortiGate Licenses
 
 **AutoScale Template:**
-Place BYOL license files in `terraform/autoscale_template/asg_license/`:
+Place BYOL license files in `terraform/aws/autoscale_template/asg_license/`:
 - BYOL licenses: `license1.lic`, `license2.lic`, etc.
 - FortiFlex: Lambda function generates tokens (no files needed)
 - PAYG: Uses AWS Marketplace licensing (no files needed)
@@ -636,7 +636,7 @@ terraform apply
 
 ### Validation Scripts
 
-The `terraform/existing_vpc_resources/verify_scripts/` directory contains scripts for validating deployments:
+The `terraform/aws/existing_vpc_resources/verify_scripts/` directory contains scripts for validating deployments:
 
 ```bash
 # Run all verification scripts

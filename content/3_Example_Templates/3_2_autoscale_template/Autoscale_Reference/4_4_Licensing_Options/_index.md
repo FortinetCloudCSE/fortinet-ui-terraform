@@ -45,7 +45,7 @@ asg_byol_asg_max_size = 4
 Place BYOL license files in the directory specified by `asg_license_directory`:
 
 ```
-terraform/autoscale_template/
+terraform/aws/autoscale_template/
 |---- terraform.tfvars
 |---- asg_license/
 |   |---- FGVM01-001.lic

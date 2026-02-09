@@ -171,10 +171,10 @@ Choose ONE licensing mode:
 ### BYOL (Bring Your Own License)
 
 1. Select **License Type**: `byol`
-2. Upload license files to `terraform/autoscale_template/asg_license/`:
+2. Upload license files to `terraform/aws/autoscale_template/asg_license/`:
    ```bash
-   cp license1.lic terraform/autoscale_template/asg_license/
-   cp license2.lic terraform/autoscale_template/asg_license/
+   cp license1.lic terraform/aws/autoscale_template/asg_license/
+   cp license2.lic terraform/aws/autoscale_template/asg_license/
    # Add as many licenses as your maximum ASG size
    ```
 3. Lambda will apply licenses automatically on instance launch
@@ -423,20 +423,20 @@ Show preview window with generated terraform.tfvars content
 3. Copy to terraform directory:
    ```bash
    cp ~/Downloads/autoscale_template.tfvars \
-     terraform/autoscale_template/terraform.tfvars
+     terraform/aws/autoscale_template/terraform.tfvars
    ```
 
 ### Option B: Save Directly
 
 1. Click **Save to Template**
-2. Confirmation: "terraform.tfvars saved to: terraform/autoscale_template/terraform.tfvars"
+2. Confirmation: "terraform.tfvars saved to: terraform/aws/autoscale_template/terraform.tfvars"
 
 ---
 
 ## Step 17: Deploy with Terraform
 
 ```bash
-cd terraform/autoscale_template
+cd terraform/aws/autoscale_template
 
 # Initialize Terraform
 terraform init

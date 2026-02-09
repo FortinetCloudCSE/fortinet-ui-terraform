@@ -214,7 +214,7 @@ Error: Error creating VPC: VpcLimitExceeded
 To destroy the `existing_vpc_resources` infrastructure:
 
 ```bash
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 terraform destroy
 ```
 
@@ -228,7 +228,7 @@ If you deployed either `autoscale_template` or `ha_pair`, **destroy it FIRST** b
 **For AutoScale Deployment:**
 ```bash
 # Step 1: Destroy autoscale_template
-cd terraform/autoscale_template
+cd terraform/aws/autoscale_template
 terraform destroy
 
 # Step 2: Destroy existing_vpc_resources
@@ -239,7 +239,7 @@ terraform destroy
 **For HA Pair Deployment:**
 ```bash
 # Step 1: Destroy ha_pair
-cd terraform/ha_pair
+cd terraform/aws/ha_pair
 terraform destroy
 
 # Step 2: Destroy existing_vpc_resources

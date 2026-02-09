@@ -71,7 +71,7 @@ terraform output
 To destroy the autoscale_template infrastructure:
 
 ```bash
-cd terraform/autoscale_template
+cd terraform/aws/autoscale_template
 terraform destroy
 ```
 
@@ -89,7 +89,7 @@ If you also deployed `existing_vpc_resources`, destroy in this order:
 
 ```bash
 # Correct order:
-cd terraform/autoscale_template
+cd terraform/aws/autoscale_template
 terraform destroy
 
 cd ../existing_vpc_resources

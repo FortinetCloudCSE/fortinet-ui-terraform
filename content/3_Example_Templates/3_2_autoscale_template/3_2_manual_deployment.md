@@ -19,7 +19,7 @@ weight: 531
 ### Step 1: Navigate to Template Directory
 
 ```bash
-cd fortinet-ui-terraform/terraform/autoscale_template
+cd fortinet-ui-terraform/terraform/aws/autoscale_template
 ```
 
 ### Step 2: Create terraform.tfvars
@@ -216,7 +216,7 @@ asg_license_directory = "asg_license"  # Directory containing .lic files
 
 2. Place license files in the directory:
    ```
-   terraform/autoscale_template/
+   terraform/aws/autoscale_template/
    |---- terraform.tfvars
    |---- asg_license/
    |   |---- FGVM01-001.lic

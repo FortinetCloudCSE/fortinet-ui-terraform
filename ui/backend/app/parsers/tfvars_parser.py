@@ -317,7 +317,7 @@ if __name__ == "__main__":
 
     # Example: Parse existing_vpc_resources tfvars
     repo_root = Path(__file__).parent.parent.parent.parent.parent
-    tfvars_path = repo_root / "terraform" / "existing_vpc_resources" / "terraform.tfvars.example"
+    tfvars_path = repo_root / "terraform" / "aws" / "existing_vpc_resources" / "terraform.tfvars.example"
 
     if tfvars_path.exists():
         schema = parse_tfvars_file(tfvars_path)

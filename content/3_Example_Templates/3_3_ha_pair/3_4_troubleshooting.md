@@ -164,8 +164,8 @@ aws ec2 search-transit-gateway-routes \
 
 ### Terraform Documentation
 
-- [ha_pair README](https://github.com/FortinetCloudCSE/fortinet-ui-terraform/tree/main/terraform/ha_pair)
-- [Variables Reference](https://github.com/FortinetCloudCSE/fortinet-ui-terraform/blob/main/terraform/ha_pair/terraform.tfvars.example)
+- [ha_pair README](https://github.com/FortinetCloudCSE/fortinet-ui-terraform/tree/main/terraform/aws/ha_pair)
+- [Variables Reference](https://github.com/FortinetCloudCSE/fortinet-ui-terraform/blob/main/terraform/aws/ha_pair/terraform.tfvars.example)
 
 ---
 

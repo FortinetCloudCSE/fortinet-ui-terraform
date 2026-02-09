@@ -61,8 +61,8 @@ NC='\033[0m' # No Color
 # Get the script directory (repository root)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOGS_DIR="${SCRIPT_DIR}/logs"
-AUTOSCALE_DIR="${SCRIPT_DIR}/terraform/autoscale_template"
-EXISTING_VPC_DIR="${SCRIPT_DIR}/terraform/existing_vpc_resources"
+AUTOSCALE_DIR="${SCRIPT_DIR}/terraform/aws/autoscale_template"
+EXISTING_VPC_DIR="${SCRIPT_DIR}/terraform/aws/existing_vpc_resources"
 
 # Timestamps
 START_TIME=$(date '+%Y-%m-%d %H:%M:%S')

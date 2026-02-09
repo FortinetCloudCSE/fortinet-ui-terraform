@@ -5,7 +5,7 @@ import './TerraformConfig.css';
 import Anser from 'anser';
 
 function TerraformConfig() {
-  const [template, setTemplate] = useState('existing_vpc_resources');
+  const [template, setTemplate] = useState('aws/existing_vpc_resources');
   const [schema, setSchema] = useState(null);
   const [config, setConfig] = useState({});
   const [loading, setLoading] = useState(true);
@@ -349,9 +349,9 @@ function TerraformConfig() {
             onChange={(e) => setTemplate(e.target.value)}
           >
             <optgroup label="AWS Templates">
-              <option value="existing_vpc_resources">Existing VPC Resources</option>
-              <option value="autoscale_template">AutoScale Template</option>
-              <option value="ha_pair">HA Pair</option>
+              <option value="aws/existing_vpc_resources">Existing VPC Resources</option>
+              <option value="aws/autoscale_template">AutoScale Template</option>
+              <option value="aws/ha_pair">HA Pair</option>
             </optgroup>
             <optgroup label="GCP Templates">
               <option value="gcp/existing_vpc_resources">GCP - Existing VPC Resources</option>
@@ -456,7 +456,7 @@ function TerraformConfig() {
               >
                 3. Apply
               </button>
-              {template === 'existing_vpc_resources' && (
+              {template === 'aws/existing_vpc_resources' && (
                 <>
                   <button
                     className="btn btn-primary"

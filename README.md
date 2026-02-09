@@ -107,9 +107,10 @@ The UI generates configurations for these Terraform templates, which are simplif
 
 ```
 terraform/
-├── existing_vpc_resources/   # Deploy first - creates base infrastructure
-├── autoscale_template/       # Option A: AutoScale with GWLB
-└── ha_pair/                  # Option B: HA Pair (Active-Passive)
+├── aws/
+│   ├── existing_vpc_resources/   # Deploy first - creates base infrastructure
+│   ├── autoscale_template/       # Option A: AutoScale with GWLB
+│   └── ha_pair/                  # Option B: HA Pair (Active-Passive)
 ```
 
 ### Deployment Order
@@ -122,7 +123,7 @@ terraform/
 If not using the UI, deploy templates manually:
 
 ```bash
-cd terraform/existing_vpc_resources
+cd terraform/aws/existing_vpc_resources
 cp terraform.tfvars.example terraform.tfvars
 # Edit terraform.tfvars
 terraform init && terraform apply
@@ -166,7 +167,7 @@ The `cp` (customer prefix) and `env` (environment) values must match between tem
 
 ## Verification Scripts
 
-Validate deployments from `terraform/existing_vpc_resources/`:
+Validate deployments from `terraform/aws/existing_vpc_resources/`:
 
 ```bash
 ./verify_scripts/verify_all.sh --verify all

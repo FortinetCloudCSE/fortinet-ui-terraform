@@ -20,7 +20,7 @@ Clone the repository containing both templates:
 
 ```bash
 git clone https://github.com/FortinetCloudCSE/fortinet-ui-terraform.git
-cd fortinet-ui-terraform/terraform/existing_vpc_resources
+cd fortinet-ui-terraform/terraform/aws/existing_vpc_resources
 ```
 
 ![Clone Repository](clone-repository.png)

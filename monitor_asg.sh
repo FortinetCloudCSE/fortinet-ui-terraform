@@ -1,13 +1,13 @@
 #!/bin/bash 
 #
 # Monitor FortiGate Autoscale Group Instances
-# Reads configuration from terraform/autoscale_template/terraform.tfvars
+# Reads configuration from terraform/aws/autoscale_template/terraform.tfvars
 #
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TFVARS_FILE="${SCRIPT_DIR}/terraform/autoscale_template/terraform.tfvars"
+TFVARS_FILE="${SCRIPT_DIR}/terraform/aws/autoscale_template/terraform.tfvars"
 
 # Colors for output
 RED='\033[0;31m'
