@@ -216,10 +216,14 @@ class TFVarsParser:
             'link': 'link',
             'compute': 'compute',
             'exclusive-with': 'exclusive_with',
-            # Fortinet-Role tag-based discovery annotations
+            # Fortinet-Role tag-based discovery annotations (AWS)
             'tag-key': 'tag_key',              # e.g., "Fortinet-Role"
             'tag-pattern': 'tag_pattern',      # e.g., "{cp}-{env}-inspection-vpc"
             'tag-resource-type': 'tag_resource_type',  # e.g., "vpc", "subnet", "igw", "tgw"
+            # GCP label-based discovery annotations
+            'label-key': 'label_key',                  # e.g., "fortinet-role"
+            'label-pattern': 'label_pattern',          # e.g., "{cp}-{env}-inspection-vpc"
+            'label-resource-type': 'label_resource_type',  # e.g., "vpc-network", "subnetwork"
         }
 
         for anno_key, anno_value in annotations.items():

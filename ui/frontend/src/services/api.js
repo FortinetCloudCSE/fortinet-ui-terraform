@@ -127,6 +127,105 @@ export const api = {
     },
   },
 
+  // GCP API methods
+  gcp: {
+    /**
+     * Check GCP credentials status
+     * @returns {Promise<Object>} Credential status
+     */
+    checkCredentials: async () => {
+      return apiFetch('/api/gcp/credentials/status');
+    },
+
+    /**
+     * Set GCP credentials from service account JSON
+     * @param {Object} serviceAccountJson - Service account key JSON
+     * @returns {Promise<Object>} Credential validation result
+     */
+    setCredentials: async (serviceAccountJson) => {
+      return apiFetch('/api/gcp/credentials/set', {
+        method: 'POST',
+        body: JSON.stringify(serviceAccountJson),
+      });
+    },
+
+    /**
+     * Get list of accessible GCP projects
+     * @returns {Promise<Array>} List of projects
+     */
+    getProjects: async () => {
+      return apiFetch('/api/gcp/projects');
+    },
+
+    /**
+     * Get GCP regions
+     * @param {string} project - GCP project ID
+     * @returns {Promise<Array>} List of regions
+     */
+    getRegions: async (project) => {
+      return apiFetch(`/api/gcp/regions?project=${project}`);
+    },
+
+    /**
+     * Get GCP zones in a region
+     * @param {string} project - GCP project ID
+     * @param {string} region - GCP region
+     * @returns {Promise<Array>} List of zones
+     */
+    getZones: async (project, region) => {
+      return apiFetch(`/api/gcp/zones?project=${project}&region=${region}`);
+    },
+
+    /**
+     * Get VPC networks in a project
+     * @param {string} project - GCP project ID
+     * @returns {Promise<Array>} List of VPC networks
+     */
+    getNetworks: async (project) => {
+      return apiFetch(`/api/gcp/networks?project=${project}`);
+    },
+
+    /**
+     * Get subnetworks in a project/region
+     * @param {string} project - GCP project ID
+     * @param {string} region - GCP region
+     * @returns {Promise<Array>} List of subnetworks
+     */
+    getSubnetworks: async (project, region) => {
+      return apiFetch(`/api/gcp/subnetworks?project=${project}&region=${region}`);
+    },
+
+    /**
+     * Discover a resource by fortinet-role label
+     * @param {string} project - GCP project ID
+     * @param {string} labelKey - Label key
+     * @param {string} labelValue - Label value
+     * @param {string} resourceType - Resource type (vpc-network, subnetwork, instance)
+     * @returns {Promise<Object|null>} Labeled resource or null
+     */
+    discoverResourceByLabel: async (project, labelKey, labelValue, resourceType) => {
+      return apiFetch(`/api/gcp/resources/by-label?project=${project}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          label_key: labelKey,
+          label_value: labelValue,
+          resource_type: resourceType,
+        }),
+      });
+    },
+
+    /**
+     * Discover all fortinet-role labeled resources
+     * @param {string} project - GCP project ID
+     * @param {string} cp - Customer prefix
+     * @param {string} env - Environment name
+     * @returns {Promise<Object>} All discovered resources
+     */
+    discoverFortinetResources: async (project, cp, env) => {
+      return apiFetch(`/api/gcp/resources/by-fortinet-role?project=${project}&cp=${cp}&env=${env}`);
+    },
+  },
+
   // Terraform API methods
   terraform: {
     /**
@@ -213,7 +312,7 @@ export const api = {
      * @returns {Promise<void>}
      */
     buildInfrastructure: async (template, onData) => {
-      const response = await fetch(`${API_BASE_URL}/api/terraform/build/${template}`);
+      const response = await fetch(`${API_BASE_URL}/api/terraform/build?template=${encodeURIComponent(template)}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -239,7 +338,7 @@ export const api = {
      * @returns {Promise<void>}
      */
     buildStep: async (template, step, onData) => {
-      const response = await fetch(`${API_BASE_URL}/api/terraform/build/${template}/${step}`);
+      const response = await fetch(`${API_BASE_URL}/api/terraform/build/step?template=${encodeURIComponent(template)}&step=${encodeURIComponent(step)}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

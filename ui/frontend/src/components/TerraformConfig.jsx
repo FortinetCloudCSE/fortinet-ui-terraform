@@ -11,6 +11,7 @@ function TerraformConfig() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [awsCredentialsValid, setAwsCredentialsValid] = useState(false);
+  const [gcpCredentialsValid, setGcpCredentialsValid] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState(null);
@@ -28,6 +29,7 @@ function TerraformConfig() {
   useEffect(() => {
     loadSchemaAndConfig();
     checkAwsCredentials();
+    checkGcpCredentials();
   }, [template]);
 
   const checkAwsCredentials = async () => {
@@ -37,6 +39,18 @@ function TerraformConfig() {
     } catch (err) {
       console.warn('AWS credentials not available:', err);
       setAwsCredentialsValid(false);
+    }
+  };
+
+  const checkGcpCredentials = async () => {
+    try {
+      const status = await api.gcp.checkCredentials();
+      setGcpCredentialsValid(status.valid);
+      return status;
+    } catch (err) {
+      console.warn('GCP credentials not available:', err);
+      setGcpCredentialsValid(false);
+      return { valid: false };
     }
   };
 
@@ -51,8 +65,9 @@ function TerraformConfig() {
 
       // Try to load saved config
       const configData = await api.terraform.loadConfig(template);
+      let newConfig;
       if (configData.success && configData.config) {
-        setConfig(configData.config);
+        newConfig = configData.config;
         setHasSavedConfig(true);
         setInheritedFields(configData.inherited_fields || []);
       } else {
@@ -63,10 +78,20 @@ function TerraformConfig() {
             defaults[field.name] = field.default_value;
           });
         });
-        setConfig({ ...defaults, ...configData.config });
+        newConfig = { ...defaults, ...configData.config };
         setHasSavedConfig(false);
         setInheritedFields(configData.inherited_fields || []);
       }
+
+      // For GCP templates, auto-populate gcp_project from credentials
+      if (template.startsWith('gcp/') && !newConfig.gcp_project) {
+        const gcpStatus = await checkGcpCredentials();
+        if (gcpStatus.valid && gcpStatus.project_id) {
+          newConfig.gcp_project = gcpStatus.project_id;
+        }
+      }
+
+      setConfig(newConfig);
     } catch (err) {
       setError(err.message);
       console.error('Error loading schema:', err);
@@ -323,14 +348,24 @@ function TerraformConfig() {
             value={template}
             onChange={(e) => setTemplate(e.target.value)}
           >
-            <option value="existing_vpc_resources">Existing VPC Resources</option>
-            <option value="autoscale_template">AutoScale Template</option>
-            <option value="ha_pair">HA Pair</option>
+            <optgroup label="AWS Templates">
+              <option value="existing_vpc_resources">Existing VPC Resources</option>
+              <option value="autoscale_template">AutoScale Template</option>
+              <option value="ha_pair">HA Pair</option>
+            </optgroup>
+            <optgroup label="GCP Templates">
+              <option value="gcp/existing_vpc_resources">GCP - Existing VPC Resources</option>
+            </optgroup>
           </select>
         </div>
-        {!awsCredentialsValid && (
+        {!template.startsWith('gcp/') && !awsCredentialsValid && (
           <div className="warning">
             Warning: AWS credentials not detected. Some dropdowns may not populate.
+          </div>
+        )}
+        {template.startsWith('gcp/') && !gcpCredentialsValid && (
+          <div className="warning">
+            Warning: GCP credentials not detected. Some dropdowns may not populate.
           </div>
         )}
       </header>
@@ -343,6 +378,7 @@ function TerraformConfig() {
             config={config}
             onFieldChange={handleFieldChange}
             awsCredentialsValid={awsCredentialsValid}
+            gcpCredentialsValid={gcpCredentialsValid}
             template={template}
             inheritedFields={inheritedFields}
           />

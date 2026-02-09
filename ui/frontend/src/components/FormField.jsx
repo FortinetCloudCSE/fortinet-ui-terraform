@@ -5,7 +5,7 @@ import { validateField } from '../utils/validation';
 import { computeValue } from '../utils/compute';
 import './FormField.css';
 
-function FormField({ field, value, config, onChange, awsCredentialsValid, template, isInherited }) {
+function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCredentialsValid, template, isInherited }) {
   const [options, setOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [validationError, setValidationError] = useState(null);
@@ -105,6 +105,55 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, templa
             }
             break;
 
+          case 'gcp-regions':
+            if (gcpCredentialsValid && config.gcp_project) {
+              const gcpRegions = await api.gcp.getRegions(config.gcp_project);
+              optionsList = gcpRegions.map(r => ({ value: r.name, label: r.name }));
+            }
+            break;
+
+          case 'gcp-zones':
+            if (gcpCredentialsValid && config.gcp_project && field.depends_on && config[field.depends_on]) {
+              const gcpRegion = config[field.depends_on];
+              const gcpZones = await api.gcp.getZones(config.gcp_project, gcpRegion);
+              optionsList = gcpZones.map(z => ({ value: z.name, label: z.name }));
+            }
+            break;
+
+          case 'gcp-networks':
+            if (gcpCredentialsValid && config.gcp_project) {
+              const gcpNetworks = await api.gcp.getNetworks(config.gcp_project);
+              optionsList = gcpNetworks.map(n => ({ value: n.name, label: n.name }));
+            }
+            break;
+
+          case 'gcp-subnetworks':
+            if (gcpCredentialsValid && config.gcp_project && config.gcp_region) {
+              const gcpSubnets = await api.gcp.getSubnetworks(config.gcp_project, config.gcp_region);
+              optionsList = gcpSubnets.map(s => ({ value: s.name, label: `${s.name} (${s.ip_cidr_range})` }));
+            }
+            break;
+
+          case 'gcp-fortinet-resource':
+            if (gcpCredentialsValid && config.gcp_project && field.label_pattern && field.label_resource_type) {
+              const labelKey = field.label_key || 'fortinet-role';
+              let labelValue = field.label_pattern
+                .replace('{cp}', config.cp || '')
+                .replace('{env}', config.env || '');
+              if (config.gcp_project && config.cp && config.env) {
+                const gcpResource = await api.gcp.discoverResourceByLabel(
+                  config.gcp_project, labelKey, labelValue, field.label_resource_type
+                );
+                if (gcpResource) {
+                  optionsList = [{
+                    value: gcpResource.resource_id,
+                    label: `${gcpResource.name || gcpResource.resource_id} (${labelValue})`
+                  }];
+                }
+              }
+            }
+            break;
+
           case 'static':
             if (field.options) {
               // Parse options format: "value1|Label 1,value2|Label 2"
@@ -136,7 +185,7 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, templa
     };
 
     loadOptions();
-  }, [field, config, awsCredentialsValid, isVisible]);
+  }, [field, config, awsCredentialsValid, gcpCredentialsValid, isVisible]);
 
   // Compute value for output fields
   const computedValue = useMemo(() => {

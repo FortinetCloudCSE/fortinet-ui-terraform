@@ -39,9 +39,31 @@ class ConfigGenerateResponse(BaseModel):
     filename: str
 
 
+# Valid template names (AWS flat, GCP nested under gcp/)
+VALID_TEMPLATES = [
+    'existing_vpc_resources', 'autoscale_template', 'ha_pair',  # AWS
+    'gcp/existing_vpc_resources',  # GCP
+]
+
+
+def get_base_template(template: str) -> str:
+    """Get the base infrastructure template for inheritance.
+
+    GCP templates inherit from gcp/existing_vpc_resources,
+    AWS templates inherit from existing_vpc_resources.
+    """
+    if template.startswith('gcp/'):
+        return 'gcp/existing_vpc_resources'
+    return 'existing_vpc_resources'
+
+
 # Get path to terraform templates directory
 def get_terraform_dir() -> Path:
     """Get path to terraform directory."""
+    import os
+    # Check for environment variable first (for container deployments)
+    if terraform_path := os.environ.get("TERRAFORM_TEMPLATES_DIR"):
+        return Path(terraform_path)
     # Navigate from backend/app/api -> backend -> ui -> parent -> terraform
     return Path(__file__).parent.parent.parent.parent.parent / "terraform"
 
@@ -65,11 +87,10 @@ async def get_config_schema(
     """
     try:
         # Validate template name
-        valid_templates = ['existing_vpc_resources', 'autoscale_template', 'ha_pair']
-        if template not in valid_templates:
+        if template not in VALID_TEMPLATES:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid template. Must be one of: {', '.join(valid_templates)}"
+                detail=f"Invalid template. Must be one of: {', '.join(VALID_TEMPLATES)}"
             )
 
         # Get path to tfvars.example file
@@ -114,11 +135,10 @@ async def save_configuration(request: ConfigSaveRequest):
     """
     try:
         # Validate template name
-        valid_templates = ['existing_vpc_resources', 'autoscale_template', 'ha_pair']
-        if request.template not in valid_templates:
+        if request.template not in VALID_TEMPLATES:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid template. Must be one of: {', '.join(valid_templates)}"
+                detail=f"Invalid template. Must be one of: {', '.join(VALID_TEMPLATES)}"
             )
 
         # Save to JSON file in terraform directory
@@ -161,11 +181,10 @@ async def load_configuration(
     """
     try:
         # Validate template name
-        valid_templates = ['existing_vpc_resources', 'autoscale_template', 'ha_pair']
-        if template not in valid_templates:
+        if template not in VALID_TEMPLATES:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid template. Must be one of: {', '.join(valid_templates)}"
+                detail=f"Invalid template. Must be one of: {', '.join(VALID_TEMPLATES)}"
             )
 
         # Load from JSON file
@@ -324,11 +343,10 @@ async def delete_configuration(
     """
     try:
         # Validate template name
-        valid_templates = ['existing_vpc_resources', 'autoscale_template', 'ha_pair']
-        if template not in valid_templates:
+        if template not in VALID_TEMPLATES:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid template. Must be one of: {', '.join(valid_templates)}"
+                detail=f"Invalid template. Must be one of: {', '.join(VALID_TEMPLATES)}"
             )
 
         # Delete config file
@@ -597,13 +615,15 @@ async def generate_tfvars(request: ConfigSaveRequest):
         content = "\n".join(lines)
 
         # Add hidden/derived fields that aren't in the UI but required by Terraform
+        # Only for AWS templates — GCP templates don't need these
         hidden_fields = []
-        if "vpc_cidr_inspection" in request.config:
-            hidden_fields.append(f'vpc_cidr_ns_inspection = "{request.config["vpc_cidr_inspection"]}"')
-        if "vpc_cidr_west" in request.config or "vpc_cidr_east" in request.config:
-            hidden_fields.append('vpc_cidr_spoke = "192.168.0.0/16"')
-        if "linux_host_ip" in request.config:
-            hidden_fields.append('acl = "private"')
+        if not request.template.startswith('gcp/'):
+            if "vpc_cidr_inspection" in request.config:
+                hidden_fields.append(f'vpc_cidr_ns_inspection = "{request.config["vpc_cidr_inspection"]}"')
+            if "vpc_cidr_west" in request.config or "vpc_cidr_east" in request.config:
+                hidden_fields.append('vpc_cidr_spoke = "192.168.0.0/16"')
+            if "linux_host_ip" in request.config:
+                hidden_fields.append('acl = "private"')
 
         # Template-specific hidden fields
         if request.template == "existing_vpc_resources":
@@ -624,7 +644,7 @@ async def generate_tfvars(request: ConfigSaveRequest):
             content += "\n\n# Hidden fields (required by Terraform, auto-generated)\n"
             content += "\n".join(hidden_fields)
 
-        filename = f"{request.template}_terraform.tfvars"
+        filename = f"{request.template.replace('/', '_')}_terraform.tfvars"
 
         logger.info(f"Generated tfvars for {request.template}")
 
@@ -791,13 +811,15 @@ async def save_tfvars_to_template(request: ConfigSaveRequest):
         content = "\n".join(lines)
 
         # Add hidden/derived fields that aren't in the UI but required by Terraform
+        # Only for AWS templates — GCP templates don't need these
         hidden_fields = []
-        if "vpc_cidr_inspection" in request.config:
-            hidden_fields.append(f'vpc_cidr_ns_inspection = "{request.config["vpc_cidr_inspection"]}"')
-        if "vpc_cidr_west" in request.config or "vpc_cidr_east" in request.config:
-            hidden_fields.append('vpc_cidr_spoke = "192.168.0.0/16"')
-        if "linux_host_ip" in request.config:
-            hidden_fields.append('acl = "private"')
+        if not request.template.startswith('gcp/'):
+            if "vpc_cidr_inspection" in request.config:
+                hidden_fields.append(f'vpc_cidr_ns_inspection = "{request.config["vpc_cidr_inspection"]}"')
+            if "vpc_cidr_west" in request.config or "vpc_cidr_east" in request.config:
+                hidden_fields.append('vpc_cidr_spoke = "192.168.0.0/16"')
+            if "linux_host_ip" in request.config:
+                hidden_fields.append('acl = "private"')
 
         # Template-specific hidden fields
         if request.template == "existing_vpc_resources":
@@ -880,13 +902,35 @@ async def list_license_files(template: str = Query(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def run_command_stream(command: list, cwd: Path):
+def _get_env_for_template(template: str) -> dict:
+    """Build environment variables for running terraform commands.
+
+    For GCP templates, injects GOOGLE_CREDENTIALS from session credentials
+    so the Terraform google provider can authenticate.
+    """
+    import os
+    env = os.environ.copy()
+
+    if template.startswith('gcp/'):
+        try:
+            from app.api.gcp import _session_credentials
+            if _session_credentials:
+                import json
+                env['GOOGLE_CREDENTIALS'] = json.dumps(_session_credentials)
+        except ImportError:
+            pass
+
+    return env
+
+
+async def run_command_stream(command: list, cwd: Path, env: dict = None):
     """
     Run a command and stream output line by line.
 
     Args:
         command: Command and arguments as list
         cwd: Working directory
+        env: Optional environment variables dict
 
     Yields:
         Tuple of (line, exit_code) where exit_code is None until process completes
@@ -897,7 +941,8 @@ async def run_command_stream(command: list, cwd: Path):
             *command,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
-            cwd=str(cwd)
+            cwd=str(cwd),
+            env=env
         )
 
         # Stream output line by line
@@ -917,8 +962,10 @@ async def run_command_stream(command: list, cwd: Path):
         yield (f"\n[Error: {str(e)}]\n", 1)
 
 
-@router.get("/build/{template}")
-async def build_infrastructure(template: str):
+@router.get("/build")
+async def build_infrastructure(
+    template: str = Query(..., description="Template name (e.g., 'existing_vpc_resources')")
+):
     """
     Run Terraform deployment process with real-time output streaming.
 
@@ -938,9 +985,8 @@ async def build_infrastructure(template: str):
     async def generate():
         try:
             # Validate template
-            valid_templates = ['existing_vpc_resources', 'autoscale_template', 'ha_pair']
-            if template not in valid_templates:
-                yield f"Error: Invalid template. Must be one of: {', '.join(valid_templates)}\n"
+            if template not in VALID_TEMPLATES:
+                yield f"Error: Invalid template. Must be one of: {', '.join(VALID_TEMPLATES)}\n"
                 return
 
             # Get template directory
@@ -957,6 +1003,9 @@ async def build_infrastructure(template: str):
                 yield f"Error: terraform.tfvars not found. Please generate it first.\n"
                 return
 
+            # Build environment (injects GCP credentials for GCP templates)
+            cmd_env = _get_env_for_template(template)
+
             yield f"=== Starting Terraform Deployment for {template} ===\n"
             yield f"Working directory: {template_dir}\n\n"
 
@@ -965,7 +1014,7 @@ async def build_infrastructure(template: str):
             yield "STEP 1: terraform init\n"
             yield "=" * 80 + "\n"
             init_failed = False
-            async for line, exit_code in run_command_stream(['terraform', 'init'], template_dir):
+            async for line, exit_code in run_command_stream(['terraform', 'init'], template_dir, env=cmd_env):
                 yield line
                 if exit_code is not None and exit_code != 0:
                     init_failed = True
@@ -982,7 +1031,7 @@ async def build_infrastructure(template: str):
             yield "STEP 2: terraform plan\n"
             yield "=" * 80 + "\n"
             plan_failed = False
-            async for line, exit_code in run_command_stream(['terraform', 'plan'], template_dir):
+            async for line, exit_code in run_command_stream(['terraform', 'plan'], template_dir, env=cmd_env):
                 yield line
                 if exit_code is not None and exit_code != 0:
                     plan_failed = True
@@ -998,7 +1047,7 @@ async def build_infrastructure(template: str):
             yield "\n" + "=" * 80 + "\n"
             yield "STEP 3: terraform apply -auto-approve\n"
             yield "=" * 80 + "\n"
-            async for line, exit_code in run_command_stream(['terraform', 'apply', '-auto-approve'], template_dir):
+            async for line, exit_code in run_command_stream(['terraform', 'apply', '-auto-approve'], template_dir, env=cmd_env):
                 yield line
 
             # Steps 4 & 5: Verification scripts (only for existing_vpc_resources)
@@ -1013,7 +1062,7 @@ async def build_infrastructure(template: str):
                         yield "STEP 4: generate_verification_data.sh\n"
                         yield "=" * 80 + "\n"
                         gen_failed = False
-                        async for line, exit_code in run_command_stream(['./generate_verification_data.sh'], verify_scripts_dir):
+                        async for line, exit_code in run_command_stream(['./generate_verification_data.sh'], verify_scripts_dir, env=cmd_env):
                             yield line
                             if exit_code is not None and exit_code != 0:
                                 gen_failed = True
@@ -1032,7 +1081,7 @@ async def build_infrastructure(template: str):
                         yield "STEP 5: verify_all.sh --verify all\n"
                         yield "=" * 80 + "\n"
                         verify_failed = False
-                        async for line, exit_code in run_command_stream(['./verify_all.sh', '--verify', 'all'], verify_scripts_dir):
+                        async for line, exit_code in run_command_stream(['./verify_all.sh', '--verify', 'all'], verify_scripts_dir, env=cmd_env):
                             yield line
                             if exit_code is not None and exit_code != 0:
                                 verify_failed = True
@@ -1055,8 +1104,11 @@ async def build_infrastructure(template: str):
     return StreamingResponse(generate(), media_type="text/plain")
 
 
-@router.get("/build/{template}/{step}")
-async def build_step(template: str, step: str):
+@router.get("/build/step")
+async def build_step(
+    template: str = Query(..., description="Template name (e.g., 'existing_vpc_resources')"),
+    step: str = Query(..., description="Step to run (init, plan, apply, destroy, verify_data, verify_all)")
+):
     """
     Run a single Terraform build step with real-time output streaming.
 
@@ -1070,9 +1122,8 @@ async def build_step(template: str, step: str):
     async def generate():
         try:
             # Validate template
-            valid_templates = ['existing_vpc_resources', 'autoscale_template', 'ha_pair']
-            if template not in valid_templates:
-                yield f"Error: Invalid template. Must be one of: {', '.join(valid_templates)}\n"
+            if template not in VALID_TEMPLATES:
+                yield f"Error: Invalid template. Must be one of: {', '.join(VALID_TEMPLATES)}\n"
                 return
 
             # Get template directory
@@ -1090,6 +1141,9 @@ async def build_step(template: str, step: str):
                     yield f"Error: terraform.tfvars not found. Please generate it first.\n"
                     return
 
+            # Build environment (injects GCP credentials for GCP templates)
+            cmd_env = _get_env_for_template(template)
+
             yield f"=== Running {step} for {template} ===\n"
             yield f"Working directory: {template_dir}\n\n"
 
@@ -1098,28 +1152,28 @@ async def build_step(template: str, step: str):
                 yield "=" * 80 + "\n"
                 yield "terraform init\n"
                 yield "=" * 80 + "\n"
-                async for line, exit_code in run_command_stream(['terraform', 'init'], template_dir):
+                async for line, exit_code in run_command_stream(['terraform', 'init'], template_dir, env=cmd_env):
                     yield line
 
             elif step == "plan":
                 yield "=" * 80 + "\n"
                 yield "terraform plan\n"
                 yield "=" * 80 + "\n"
-                async for line, exit_code in run_command_stream(['terraform', 'plan'], template_dir):
+                async for line, exit_code in run_command_stream(['terraform', 'plan'], template_dir, env=cmd_env):
                     yield line
 
             elif step == "apply":
                 yield "=" * 80 + "\n"
                 yield "terraform apply -auto-approve\n"
                 yield "=" * 80 + "\n"
-                async for line, exit_code in run_command_stream(['terraform', 'apply', '-auto-approve'], template_dir):
+                async for line, exit_code in run_command_stream(['terraform', 'apply', '-auto-approve'], template_dir, env=cmd_env):
                     yield line
 
             elif step == "destroy":
                 yield "=" * 80 + "\n"
                 yield "terraform destroy -auto-approve\n"
                 yield "=" * 80 + "\n"
-                async for line, exit_code in run_command_stream(['terraform', 'destroy', '-auto-approve'], template_dir):
+                async for line, exit_code in run_command_stream(['terraform', 'destroy', '-auto-approve'], template_dir, env=cmd_env):
                     yield line
 
             elif step == "verify_data":
@@ -1130,7 +1184,7 @@ async def build_step(template: str, step: str):
                         yield "=" * 80 + "\n"
                         yield "generate_verification_data.sh\n"
                         yield "=" * 80 + "\n"
-                        async for line, exit_code in run_command_stream(['./generate_verification_data.sh'], verify_scripts_dir):
+                        async for line, exit_code in run_command_stream(['./generate_verification_data.sh'], verify_scripts_dir, env=cmd_env):
                             yield line
                     else:
                         yield "Error: generate_verification_data.sh not found\n"
@@ -1145,7 +1199,7 @@ async def build_step(template: str, step: str):
                         yield "=" * 80 + "\n"
                         yield "verify_all.sh --verify all\n"
                         yield "=" * 80 + "\n"
-                        async for line, exit_code in run_command_stream(['./verify_all.sh', '--verify', 'all'], verify_scripts_dir):
+                        async for line, exit_code in run_command_stream(['./verify_all.sh', '--verify', 'all'], verify_scripts_dir, env=cmd_env):
                             yield line
                     else:
                         yield "Error: verify_all.sh not found\n"
@@ -1359,11 +1413,10 @@ async def save_log(request: SaveLogRequest):
 
     try:
         # Validate template
-        valid_templates = ['existing_vpc_resources', 'autoscale_template', 'ha_pair']
-        if request.template not in valid_templates:
+        if request.template not in VALID_TEMPLATES:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid template. Must be one of: {', '.join(valid_templates)}"
+                detail=f"Invalid template. Must be one of: {', '.join(VALID_TEMPLATES)}"
             )
 
         # Validate mode

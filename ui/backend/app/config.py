@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     cors_origins: Union[List[str], str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:3002",
         "http://localhost:5173",  # Vite default port
         "http://127.0.0.1:5173",
     ]
@@ -34,6 +38,10 @@ class Settings(BaseSettings):
     # AWS Configuration (optional)
     aws_profile: str = ""
     aws_region: str = "us-west-2"
+
+    # GCP Configuration (optional)
+    gcp_project: str = ""
+    gcp_region: str = "us-central1"
     
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,0 +1,268 @@
+#====================================================================================================
+# @ui-group: GCP Project Settings
+# @ui-description: GCP project configuration
+# @ui-order: 1
+#====================================================================================================
+
+# @ui-type: text
+# @ui-label: GCP Project ID
+# @ui-description: The GCP project to deploy resources in
+# @ui-required: true
+# @ui-placeholder: my-gcp-project-id
+gcp_project = ""
+
+#====================================================================================================
+# @ui-group: Region and Zones
+# @ui-description: GCP region and availability zone selection
+# @ui-order: 2
+#====================================================================================================
+
+# @ui-type: select
+# @ui-source: gcp-regions
+# @ui-label: GCP Region
+# @ui-description: Primary region for resource deployment
+# @ui-required: true
+gcp_region = "us-central1"
+
+# @ui-type: select
+# @ui-source: gcp-zones
+# @ui-label: Primary Zone
+# @ui-description: Primary availability zone
+# @ui-depends-on: gcp_region
+# @ui-required: true
+# @ui-width: half
+gcp_zone_1 = ""
+
+# @ui-type: select
+# @ui-source: gcp-zones
+# @ui-label: Secondary Zone
+# @ui-description: Secondary availability zone for HA
+# @ui-depends-on: gcp_region
+# @ui-required: true
+# @ui-width: half
+gcp_zone_2 = ""
+
+#====================================================================================================
+# @ui-group: Naming Convention
+# @ui-description: Customer prefix and environment for resource naming ({cp}-{env}-{resource})
+# @ui-order: 3
+#====================================================================================================
+
+# @ui-type: text
+# @ui-label: Customer Prefix (cp)
+# @ui-description: Short identifier for your organization (e.g., acme)
+# @ui-required: true
+# @ui-width: half
+# @ui-placeholder: acme
+cp = "acme"
+
+# @ui-type: text
+# @ui-label: Environment (env)
+# @ui-description: Environment name (e.g., test, prod, dev)
+# @ui-required: true
+# @ui-width: half
+# @ui-placeholder: test
+env = "test"
+
+#====================================================================================================
+# @ui-group: Inspection VPC Network
+# @ui-description: VPC network for FortiGate inspection (firewall traffic flows through here)
+# @ui-order: 4
+#====================================================================================================
+
+# @ui-type: cidr
+# @ui-label: Inspection VPC CIDR
+# @ui-description: CIDR block for the inspection VPC network
+# @ui-required: true
+# @ui-width: half
+vpc_cidr_inspection = "10.0.0.0/16"
+
+# @ui-type: number
+# @ui-label: Subnet Bits
+# @ui-description: Number of additional bits for subnet calculation (e.g., 8 creates /24 subnets from /16)
+# @ui-width: half
+subnet_bits = 8
+
+# @ui-type: cidr
+# @ui-label: Public Subnet AZ1
+# @ui-description: CIDR for public (untrust) subnet in zone 1
+# @ui-width: half
+inspection_public_subnet_az1 = "10.0.1.0/24"
+
+# @ui-type: cidr
+# @ui-label: Public Subnet AZ2
+# @ui-description: CIDR for public (untrust) subnet in zone 2
+# @ui-width: half
+inspection_public_subnet_az2 = "10.0.2.0/24"
+
+# @ui-type: cidr
+# @ui-label: Private Subnet AZ1
+# @ui-description: CIDR for private (trust) subnet in zone 1
+# @ui-width: half
+inspection_private_subnet_az1 = "10.0.3.0/24"
+
+# @ui-type: cidr
+# @ui-label: Private Subnet AZ2
+# @ui-description: CIDR for private (trust) subnet in zone 2
+# @ui-width: half
+inspection_private_subnet_az2 = "10.0.4.0/24"
+
+# @ui-type: cidr
+# @ui-label: ILB Subnet AZ1
+# @ui-description: CIDR for internal load balancer subnet in zone 1
+# @ui-width: half
+inspection_ilb_subnet_az1 = "10.0.5.0/24"
+
+# @ui-type: cidr
+# @ui-label: ILB Subnet AZ2
+# @ui-description: CIDR for internal load balancer subnet in zone 2
+# @ui-width: half
+inspection_ilb_subnet_az2 = "10.0.6.0/24"
+
+# @ui-type: cidr
+# @ui-label: HA Sync Subnet AZ1
+# @ui-description: CIDR for FortiGate HA heartbeat/sync in zone 1
+# @ui-width: half
+inspection_hasync_subnet_az1 = "10.0.7.0/24"
+
+# @ui-type: cidr
+# @ui-label: HA Sync Subnet AZ2
+# @ui-description: CIDR for FortiGate HA heartbeat/sync in zone 2
+# @ui-width: half
+inspection_hasync_subnet_az2 = "10.0.8.0/24"
+
+#====================================================================================================
+# @ui-group: Management VPC Network
+# @ui-description: Separate VPC for management access (jump box, FortiManager, FortiAnalyzer)
+# @ui-order: 5
+#====================================================================================================
+
+# @ui-type: checkbox
+# @ui-label: Enable Management VPC
+# @ui-description: Create a dedicated management VPC with jump box
+enable_management_vpc = true
+
+# @ui-type: cidr
+# @ui-label: Management VPC CIDR
+# @ui-description: CIDR block for the management VPC
+# @ui-required: true
+# @ui-show-if: enable_management_vpc=true
+# @ui-width: half
+vpc_cidr_management = "10.10.0.0/16"
+
+# @ui-type: cidr
+# @ui-label: Management Subnet AZ1
+# @ui-description: CIDR for management subnet in zone 1
+# @ui-show-if: enable_management_vpc=true
+# @ui-width: half
+management_subnet_az1 = "10.10.1.0/24"
+
+# @ui-type: cidr
+# @ui-label: Management Subnet AZ2
+# @ui-description: CIDR for management subnet in zone 2
+# @ui-show-if: enable_management_vpc=true
+# @ui-width: half
+management_subnet_az2 = "10.10.2.0/24"
+
+#====================================================================================================
+# @ui-group: Spoke VPC Networks
+# @ui-description: East/West spoke VPCs for testing traffic flows through FortiGate
+# @ui-order: 6
+#====================================================================================================
+
+# @ui-type: checkbox
+# @ui-label: Enable Spoke VPCs
+# @ui-description: Create east and west spoke VPCs with test instances
+enable_spoke_vpcs = true
+
+# @ui-type: cidr
+# @ui-label: East VPC CIDR
+# @ui-description: CIDR block for the east spoke VPC
+# @ui-show-if: enable_spoke_vpcs=true
+# @ui-width: half
+vpc_cidr_east = "192.168.1.0/24"
+
+# @ui-type: cidr
+# @ui-label: West VPC CIDR
+# @ui-description: CIDR block for the west spoke VPC
+# @ui-show-if: enable_spoke_vpcs=true
+# @ui-width: half
+vpc_cidr_west = "192.168.2.0/24"
+
+#====================================================================================================
+# @ui-group: Instance Configuration
+# @ui-description: SSH keys and machine types for compute instances
+# @ui-order: 7
+#====================================================================================================
+
+# @ui-type: checkbox
+# @ui-label: Enable Instance Creation
+# @ui-description: Create jump box and spoke test instances (disable for network-only deployment)
+enable_instances = false
+
+# @ui-type: text
+# @ui-label: SSH Username
+# @ui-description: Username for SSH key authentication on Linux instances
+# @ui-required: true
+# @ui-show-if: enable_instances=true
+# @ui-width: half
+ssh_username = "admin"
+
+# @ui-type: text
+# @ui-label: SSH Public Key Path
+# @ui-description: Path to SSH public key file for instance authentication
+# @ui-required: true
+# @ui-show-if: enable_instances=true
+# @ui-placeholder: ~/.ssh/id_rsa.pub
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+# @ui-type: text
+# @ui-label: Management CIDR
+# @ui-description: IP/CIDR allowed for management access (your public IP as x.x.x.x/32)
+# @ui-required: true
+# @ui-placeholder: x.x.x.x/32
+management_cidr = "0.0.0.0/0"
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: e2-standard-4|e2-standard-4 (4 vCPU 16GB),e2-standard-8|e2-standard-8 (8 vCPU 32GB),n2-standard-4|n2-standard-4 (4 vCPU 16GB),n2-standard-8|n2-standard-8 (8 vCPU 32GB),c2-standard-4|c2-standard-4 (4 vCPU 16GB)
+# @ui-label: Jump Box Machine Type
+# @ui-description: Machine type for jump box instance
+# @ui-show-if: enable_instances=true
+# @ui-width: half
+jumpbox_machine_type = "e2-standard-4"
+
+#====================================================================================================
+# @ui-group: FortiManager / FortiAnalyzer
+# @ui-description: Optional FortiManager and FortiAnalyzer instances in management VPC
+# @ui-order: 8
+# @ui-show-if: enable_management_vpc=true
+#====================================================================================================
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiManager
+# @ui-description: Deploy a FortiManager instance in the management VPC
+enable_fortimanager = false
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: e2-standard-4|e2-standard-4 (4 vCPU 16GB),e2-standard-8|e2-standard-8 (8 vCPU 32GB),n2-standard-4|n2-standard-4 (4 vCPU 16GB)
+# @ui-label: FortiManager Machine Type
+# @ui-description: Machine type for FortiManager instance
+# @ui-show-if: enable_fortimanager=true
+# @ui-width: half
+fortimanager_machine_type = "e2-standard-4"
+
+# @ui-type: checkbox
+# @ui-label: Enable FortiAnalyzer
+# @ui-description: Deploy a FortiAnalyzer instance in the management VPC
+enable_fortianalyzer = false
+
+# @ui-type: select
+# @ui-source: static
+# @ui-options: e2-standard-4|e2-standard-4 (4 vCPU 16GB),e2-standard-8|e2-standard-8 (8 vCPU 32GB),n2-standard-4|n2-standard-4 (4 vCPU 16GB)
+# @ui-label: FortiAnalyzer Machine Type
+# @ui-description: Machine type for FortiAnalyzer instance
+# @ui-show-if: enable_fortianalyzer=true
+# @ui-width: half
+fortianalyzer_machine_type = "e2-standard-4"

@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.schemas import HealthResponse
-from app.api import root, aws, terraform
+from app.api import root, aws, gcp, terraform
 
 # Configure logging
 logging.basicConfig(
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
 # Create FastAPI application
 app = FastAPI(
     title=settings.app_name,
-    description="REST API for dynamic Terraform configuration UI with AWS validation",
+    description="REST API for dynamic Terraform configuration UI with AWS and GCP validation",
     version=settings.app_version,
     lifespan=lifespan,
 )
@@ -47,6 +47,7 @@ app.add_middleware(
 # Include routers
 app.include_router(root.router, tags=["root"])
 app.include_router(aws.router)
+app.include_router(gcp.router)
 app.include_router(terraform.router)
 
 
