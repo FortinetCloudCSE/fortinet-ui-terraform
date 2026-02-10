@@ -124,17 +124,27 @@ Terraform templates are organized by cloud provider under `terraform/`. AWS temp
      - Linux test instances with public IPs (required for access since no TGW connectivity)
      - Tagged with `purpose=distributed_egress` for discovery by autoscale_template
 
+GCP templates reside under `terraform/gcp/`:
+
+4. **`terraform/gcp/existing_vpc_resources/`** - GCP base infrastructure
+   - First GCP template, mirrors the AWS existing_vpc_resources pattern
+   - Has `terraform.tfvars.example` with UI annotations for the web UI
+   - Backend template name: `gcp/existing_vpc_resources`
+   - Uses GCP labels (key: `fortinet_role`, underscored values) instead of AWS tags
+
 ### Web UI Application
 
 Located in `ui/` directory:
 - **Backend**: Python FastAPI application (`ui/backend/`)
   - `app/api/terraform.py` - Terraform configuration generation and validation
   - `app/api/aws.py` - AWS resource discovery (regions, AZs, keypairs, etc.)
+  - `app/api/gcp.py` - GCP resource discovery (regions, zones, networks, subnetworks, label-based discovery)
   - Supports three AWS templates: `aws/existing_vpc_resources`, `aws/autoscale_template`, `aws/ha_pair`
+  - Supports one GCP template: `gcp/existing_vpc_resources`
   - Config inheritance: Both `autoscale_template` and `ha_pair` inherit base settings from `existing_vpc_resources`
 - **Frontend**: React application (`ui/frontend/`)
   - `src/components/TerraformConfig.jsx` - Main configuration UI component
-  - Template dropdown includes all three templates
+  - Template dropdown includes all four templates (3 AWS + 1 GCP)
   - Form groups with field validation and conditional visibility
 
 ### UI Annotation System
@@ -191,6 +201,27 @@ curl -X DELETE http://backend:8000/api/aws/credentials/clear
 ```
 
 The `aws_login.sh` script automatically handles both methods - it exports credentials locally for CLI use and POSTs them to the backend for UI use.
+
+### GCP Credentials for UI
+
+The UI backend requires GCP credentials (service account JSON) to discover GCP resources. Credentials are injected via API:
+
+```bash
+# POST service account JSON directly to backend
+curl -X POST http://127.0.0.1:8000/api/gcp/credentials/set \
+  -H "Content-Type: application/json" \
+  -d @/path/to/service-account-key.json
+
+# Check credential status
+curl http://127.0.0.1:8000/api/gcp/credentials/status
+
+# Clear credentials (fall back to Application Default Credentials)
+curl -X DELETE http://127.0.0.1:8000/api/gcp/credentials/clear
+```
+
+The backend validates credentials by listing GCP regions. For terraform plan/apply on GCP templates, the backend injects the stored credentials as `GOOGLE_CREDENTIALS` environment variable into the subprocess.
+
+**Test account:** Project `cse-us-341516`, service account `mw-tf-test@cse-us-341516.iam.gserviceaccount.com`
 
 ### Documentation
 
