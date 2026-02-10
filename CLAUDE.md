@@ -12,6 +12,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Make code changes and let the user review before committing
 - User will decide when to commit (saves tokens and provides control)
 
+## Linear.app Task Management
+
+**Team:** Fortinet-UI-Terraform (key: `FOR`)
+**Team ID:** `b894d4e5-e191-4e0a-a326-52bace341f6c`
+**Workspace:** https://linear.app/fortinet-ui-terraform
+**API Key:** Stored in `.env` as `LINEAR_API_KEY`
+
+**Example queries:**
+```bash
+# List all issues
+source .env && curl -s -X POST "https://api.linear.app/graphql" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $LINEAR_API_KEY" \
+  -d '{"query":"{ team(id: \"b894d4e5-e191-4e0a-a326-52bace341f6c\") { issues { nodes { identifier title state { name } } } } }"}' | python3 -m json.tool
+
+# Create an issue
+source .env && curl -s -X POST "https://api.linear.app/graphql" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $LINEAR_API_KEY" \
+  -d '{"query":"mutation { issueCreate(input: { teamId: \"b894d4e5-e191-4e0a-a326-52bace341f6c\", title: \"Issue title\", description: \"Description\" }) { success issue { identifier title url } } }"}' | python3 -m json.tool
+```
+
 ## Session Reminders
 
 **Remind the user at the start of each session:**

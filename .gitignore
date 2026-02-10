@@ -45,3 +45,4 @@ spreadsheet/
 stress_test.sh
 stress_test_*.sh
 stress_tests/
+.env
