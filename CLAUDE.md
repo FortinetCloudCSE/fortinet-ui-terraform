@@ -34,6 +34,24 @@ source .env && curl -s -X POST "https://api.linear.app/graphql" \
   -d '{"query":"mutation { issueCreate(input: { teamId: \"b894d4e5-e191-4e0a-a326-52bace341f6c\", title: \"Issue title\", description: \"Description\" }) { success issue { identifier title url } } }"}' | python3 -m json.tool
 ```
 
+## Trello Board Sync
+
+**Board:** "Mike Wooten Priorities" — ID `67c1e0777b2eee71b1f14e2b`
+**API:** `https://api.trello.com/1/` with `?key=$TRELLO_API_KEY&token=$TRELLO_API_TOKEN` (keys in `.env`)
+
+**Lists:**
+- UI-Tool: `698cad456353dff23e55053c` — rewrite tasks (FOR-7 through FOR-23)
+- Done: `67c1e0777b2eee71b1f14e28`
+
+**Sync rule:** When a Linear issue (FOR-7 through FOR-23) is marked Done, move the corresponding Trello card from UI-Tool to Done (`67c1e0777b2eee71b1f14e28`).
+
+```bash
+# Move a card to Done
+source .env && curl -s -X PUT "https://api.trello.com/1/cards/{CARD_ID}?key=$TRELLO_API_KEY&token=$TRELLO_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"idList": "67c1e0777b2eee71b1f14e28"}'
+```
+
 ## Session Reminders
 
 **Remind the user at the start of each session:**
