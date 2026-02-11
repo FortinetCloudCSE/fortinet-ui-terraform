@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import api from '../services/api';
 import FormGroup from './FormGroup';
+import TemplateRegistration from './TemplateRegistration';
+import DriftResolution from './DriftResolution';
 import './TerraformConfig.css';
 import Anser from 'anser';
 
@@ -23,7 +25,19 @@ function TerraformConfig() {
   const [showBuildSteps, setShowBuildSteps] = useState(false);
   const [inheritedFields, setInheritedFields] = useState([]);
   const [showSaveLogModal, setShowSaveLogModal] = useState(false);
+  const [registeredTemplates, setRegisteredTemplates] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+  const [driftStatus, setDriftStatus] = useState(null);
+  const [driftEntries, setDriftEntries] = useState([]);
+  const [driftDismissed, setDriftDismissed] = useState(false);
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [showDriftResolution, setShowDriftResolution] = useState(false);
   const terminalOutputRef = useRef(null);
+
+  // Load registered templates on mount
+  useEffect(() => {
+    loadRegisteredTemplates();
+  }, []);
 
   // Load schema and config on mount or template change
   useEffect(() => {
@@ -31,6 +45,25 @@ function TerraformConfig() {
     checkAwsCredentials();
     checkGcpCredentials();
   }, [template]);
+
+  // Match current template to DB record when registry loads
+  useEffect(() => {
+    if (registeredTemplates.length > 0) {
+      const match = registeredTemplates.find(t => t.name === template);
+      if (match) {
+        setSelectedTemplateId(match.id);
+      }
+    }
+  }, [registeredTemplates]);
+
+  // Check drift status when selected template ID changes
+  useEffect(() => {
+    if (selectedTemplateId) {
+      checkDriftStatus(selectedTemplateId);
+    } else {
+      setDriftStatus(null);
+    }
+  }, [selectedTemplateId]);
 
   const checkAwsCredentials = async () => {
     try {
@@ -52,6 +85,35 @@ function TerraformConfig() {
       setGcpCredentialsValid(false);
       return { valid: false };
     }
+  };
+
+  const loadRegisteredTemplates = async () => {
+    try {
+      const templates = await api.templates.list();
+      setRegisteredTemplates(templates);
+    } catch (err) {
+      console.warn('Template registry not available:', err);
+      setRegisteredTemplates([]);
+    }
+  };
+
+  const checkDriftStatus = async (templateId) => {
+    try {
+      const report = await api.templates.getDrift(templateId);
+      setDriftStatus(report.status);
+      setDriftEntries(report.entries || []);
+      setDriftDismissed(false);
+    } catch (err) {
+      console.warn('Drift check failed:', err);
+      setDriftStatus(null);
+      setDriftEntries([]);
+    }
+  };
+
+  const handleTemplateChange = (value) => {
+    setTemplate(value);
+    const dbTemplate = registeredTemplates.find(t => t.name === value);
+    setSelectedTemplateId(dbTemplate ? dbTemplate.id : null);
   };
 
   const loadSchemaAndConfig = async () => {
@@ -346,18 +408,59 @@ function TerraformConfig() {
           <select
             id="template"
             value={template}
-            onChange={(e) => setTemplate(e.target.value)}
+            onChange={(e) => handleTemplateChange(e.target.value)}
           >
-            <optgroup label="AWS Templates">
-              <option value="aws/existing_vpc_resources">Existing VPC Resources</option>
-              <option value="aws/autoscale_template">AutoScale Template</option>
-              <option value="aws/ha_pair">HA Pair</option>
-            </optgroup>
-            <optgroup label="GCP Templates">
-              <option value="gcp/existing_vpc_resources">GCP - Existing VPC Resources</option>
-            </optgroup>
+            {registeredTemplates.length > 0 ? (
+              registeredTemplates.map(t => (
+                <option key={t.id} value={t.name}>{t.name}</option>
+              ))
+            ) : (
+              <>
+                <optgroup label="AWS Templates">
+                  <option value="aws/existing_vpc_resources">Existing VPC Resources</option>
+                  <option value="aws/autoscale_template">AutoScale Template</option>
+                  <option value="aws/ha_pair">HA Pair</option>
+                </optgroup>
+                <optgroup label="GCP Templates">
+                  <option value="gcp/existing_vpc_resources">GCP - Existing VPC Resources</option>
+                </optgroup>
+              </>
+            )}
           </select>
+          {driftStatus && (
+            <span
+              className={`drift-indicator drift-${driftStatus}${driftStatus !== 'clean' ? ' drift-clickable' : ''}`}
+              onClick={driftStatus !== 'clean' ? () => setShowDriftResolution(true) : undefined}
+              title={driftStatus !== 'clean' ? 'Click to resolve drift' : ''}
+            >
+              {driftStatus === 'clean' ? 'Clean' : driftStatus === 'warning' ? 'Warning' : 'Drift Detected'}
+            </span>
+          )}
+          <button
+            className="btn-register-template"
+            onClick={() => setShowRegistration(true)}
+            title="Register a new template"
+          >
+            +
+          </button>
         </div>
+        {selectedTemplateId && (() => {
+          const tmpl = registeredTemplates.find(t => t.id === selectedTemplateId);
+          if (!tmpl) return null;
+          return (
+            <div className="template-meta">
+              <span className="meta-item">
+                <strong>Repo:</strong> {tmpl.repo_url}
+              </span>
+              <span className="meta-item">
+                <strong>Branch:</strong> {tmpl.branch}
+              </span>
+              <span className="meta-item">
+                <strong>Last updated:</strong> {new Date(tmpl.updated_at).toLocaleDateString()}
+              </span>
+            </div>
+          );
+        })()}
         {!template.startsWith('gcp/') && !awsCredentialsValid && (
           <div className="warning">
             Warning: AWS credentials not detected. Some dropdowns may not populate.
@@ -369,6 +472,32 @@ function TerraformConfig() {
           </div>
         )}
       </header>
+
+      {driftStatus === 'warning' && !driftDismissed && driftEntries.length > 0 && (
+        <div className="drift-warning-banner">
+          <div className="drift-warning-content">
+            <strong>Drift detected:</strong> The following template files have changed since last snapshot:
+            <ul className="drift-warning-files">
+              {driftEntries.map((entry, i) => (
+                <li key={i}>
+                  <span className={`drift-warning-type drift-warning-${entry.drift_type}`}>
+                    {entry.drift_type === 'changed' ? 'M' : entry.drift_type === 'added' ? 'A' : 'D'}
+                  </span>
+                  {entry.filename}
+                </li>
+              ))}
+            </ul>
+            <span className="drift-warning-note">This does not block plan/apply.</span>
+          </div>
+          <button
+            className="drift-warning-dismiss"
+            onClick={() => setDriftDismissed(true)}
+            title="Dismiss"
+          >
+            &times;
+          </button>
+        </div>
+      )}
 
       <main className="config-main">
         {schema && schema.groups.map(group => (
@@ -571,6 +700,23 @@ function TerraformConfig() {
           </div>
         </div>
       )}
+
+      <TemplateRegistration
+        isOpen={showRegistration}
+        onClose={() => setShowRegistration(false)}
+        onTemplateCreated={loadRegisteredTemplates}
+      />
+
+      <DriftResolution
+        isOpen={showDriftResolution}
+        templateId={selectedTemplateId}
+        templateName={template}
+        onClose={() => setShowDriftResolution(false)}
+        onResolved={() => {
+          checkDriftStatus(selectedTemplateId);
+          loadRegisteredTemplates();
+        }}
+      />
     </div>
   );
 }

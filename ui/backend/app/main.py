@@ -5,8 +5,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
+from app.db import init_db, close_db
 from app.schemas import HealthResponse
-from app.api import root, aws, gcp, terraform
+from app.api import root, aws, gcp, templates, tfvars_ui, template_terraform
 
 # Configure logging
 logging.basicConfig(
@@ -22,8 +23,10 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting %s v%s", settings.app_name, settings.app_version)
     logger.info("CORS origins: %s", settings.cors_origins)
+    await init_db(settings.db_path)
     yield
     # Shutdown
+    await close_db()
     logger.info("Shutting down %s", settings.app_name)
 
 
@@ -48,7 +51,9 @@ app.add_middleware(
 app.include_router(root.router, tags=["root"])
 app.include_router(aws.router)
 app.include_router(gcp.router)
-app.include_router(terraform.router)
+app.include_router(templates.router)
+app.include_router(tfvars_ui.router)
+app.include_router(template_terraform.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["health"])

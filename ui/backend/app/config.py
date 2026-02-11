@@ -1,4 +1,5 @@
 """Application configuration using Pydantic Settings."""
+from pathlib import Path
 from typing import List, Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -42,6 +43,10 @@ class Settings(BaseSettings):
     # GCP Configuration (optional)
     gcp_project: str = ""
     gcp_region: str = "us-central1"
+
+    # Template Registry Database
+    db_path: Path = Path("data/registry.db")
+    clone_dir: Path = Path("data/clones")
     
     model_config = SettingsConfigDict(
         env_file=".env",

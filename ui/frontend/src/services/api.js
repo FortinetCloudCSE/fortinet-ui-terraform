@@ -226,150 +226,82 @@ export const api = {
     },
   },
 
-  // Terraform API methods
-  terraform: {
+  // Template registry methods
+  templates: {
     /**
-     * Get configuration schema for a template
-     * @param {string} template - Template name
-     * @returns {Promise<Object>} Schema with groups and fields
+     * List all registered templates
+     * @returns {Promise<Array>} List of templates
      */
-    getSchema: async (template) => {
-      return apiFetch(`/api/terraform/schema?template=${template}`);
+    list: async () => {
+      return apiFetch('/api/templates');
     },
 
     /**
-     * Save configuration
-     * @param {string} template - Template name
-     * @param {Object} config - Configuration object
-     * @returns {Promise<Object>} Save response
+     * Register a new template
+     * @param {Object} data - Template data {name, repo_url, branch, repo_path}
+     * @returns {Promise<Object>} Created template
      */
-    saveConfig: async (template, config) => {
-      return apiFetch('/api/terraform/config/save', {
+    create: async (data) => {
+      return apiFetch('/api/templates', {
         method: 'POST',
-        body: JSON.stringify({ template, config }),
+        body: JSON.stringify(data),
       });
     },
 
     /**
-     * Load saved configuration
-     * @param {string} template - Template name
-     * @returns {Promise<Object>} Saved configuration
-     */
-    loadConfig: async (template) => {
-      return apiFetch(`/api/terraform/config/load?template=${template}`);
-    },
-
-    /**
-     * Delete saved configuration and reset to defaults
-     * @param {string} template - Template name
+     * Delete a template
+     * @param {number} templateId - Template ID
      * @returns {Promise<Object>} Delete response
      */
-    deleteConfig: async (template) => {
-      return apiFetch(`/api/terraform/config/delete?template=${template}`, {
+    delete: async (templateId) => {
+      return apiFetch(`/api/templates/${templateId}`, {
         method: 'DELETE',
       });
     },
 
     /**
-     * Generate tfvars file content
-     * @param {string} template - Template name
-     * @param {Object} config - Configuration object
-     * @returns {Promise<Object>} Generated tfvars content
+     * Generate scaffold tfvars.ui for a template
+     * @param {number} templateId - Template ID
+     * @returns {Promise<Object>} Scaffold content and variable count
      */
-    generateTfvars: async (template, config) => {
-      return apiFetch('/api/terraform/config/generate', {
+    scaffold: async (templateId) => {
+      return apiFetch(`/api/templates/${templateId}/scaffold`, {
         method: 'POST',
-        body: JSON.stringify({ template, config }),
       });
     },
 
     /**
-     * Save tfvars directly to template directory
-     * @param {string} template - Template name
-     * @param {Object} config - Configuration object
-     * @returns {Promise<Object>} Save response
+     * Export tfvars.ui content for a template
+     * @param {number} templateId - Template ID
+     * @returns {Promise<Object>} Content and template name
      */
-    saveToTemplate: async (template, config) => {
-      return apiFetch('/api/terraform/config/save-to-template', {
+    export: async (templateId) => {
+      return apiFetch(`/api/templates/${templateId}/export`);
+    },
+
+    /**
+     * Import updated tfvars.ui content for a template
+     * @param {number} templateId - Template ID
+     * @param {string} content - The tfvars.ui content
+     * @returns {Promise<Object>} Import result
+     */
+    import: async (templateId, content) => {
+      return apiFetch(`/api/templates/${templateId}/import`, {
         method: 'POST',
-        body: JSON.stringify({ template, config }),
+        body: JSON.stringify({ content }),
       });
     },
 
     /**
-     * Get list of license files for a template
-     * @param {string} template - Template name
-     * @returns {Promise<Array>} List of license files
+     * Get drift status for a template
+     * @param {number} templateId - Template ID
+     * @returns {Promise<Object>} Drift report with status and entries
      */
-    getLicenseFiles: async (template) => {
-      return apiFetch(`/api/terraform/license-files?template=${template}`);
-    },
-
-    /**
-     * Build infrastructure with streaming output
-     * @param {string} template - Template name
-     * @param {Function} onData - Callback for each line of output
-     * @returns {Promise<void>}
-     */
-    buildInfrastructure: async (template, onData) => {
-      const response = await fetch(`${API_BASE_URL}/api/terraform/build?template=${encodeURIComponent(template)}`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const text = decoder.decode(value, { stream: true });
-        onData(text);
-      }
-    },
-
-    /**
-     * Run a single build step with streaming output
-     * @param {string} template - Template name
-     * @param {string} step - Step to run (init, plan, apply, destroy, verify_data, verify_all)
-     * @param {Function} onData - Callback for each line of output
-     * @returns {Promise<void>}
-     */
-    buildStep: async (template, step, onData) => {
-      const response = await fetch(`${API_BASE_URL}/api/terraform/build/step?template=${encodeURIComponent(template)}&step=${encodeURIComponent(step)}`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const text = decoder.decode(value, { stream: true });
-        onData(text);
-      }
-    },
-
-    /**
-     * Save build output to log file
-     * @param {string} template - Template name
-     * @param {string} content - Log content to save
-     * @param {string} mode - 'append' or 'truncate'
-     * @returns {Promise<Object>} Save response with file path
-     */
-    saveLog: async (template, content, mode) => {
-      return apiFetch('/api/terraform/save-log', {
-        method: 'POST',
-        body: JSON.stringify({ template, content, mode }),
-      });
+    getDrift: async (templateId) => {
+      return apiFetch(`/api/templates/${templateId}/drift`);
     },
   },
+
 };
 
 export default api;

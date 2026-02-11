@@ -174,39 +174,76 @@ GCP templates reside under `terraform/gcp/`:
 
 ### Web UI Application
 
-Located in `ui/` directory:
-- **Backend**: Python FastAPI application (`ui/backend/`)
-  - `app/api/terraform.py` - Terraform configuration generation and validation
-  - `app/api/aws.py` - AWS resource discovery (regions, AZs, keypairs, etc.)
-  - `app/api/gcp.py` - GCP resource discovery (regions, zones, networks, subnetworks, label-based discovery)
-  - Supports three AWS templates: `aws/existing_vpc_resources`, `aws/autoscale_template`, `aws/ha_pair`
-  - Supports one GCP template: `gcp/existing_vpc_resources`
-  - Config inheritance: Both `autoscale_template` and `ha_pair` inherit base settings from `existing_vpc_resources`
-- **Frontend**: React application (`ui/frontend/`)
-  - `src/components/TerraformConfig.jsx` - Main configuration UI component
-  - Template dropdown includes all four templates (3 AWS + 1 GCP)
-  - Form groups with field validation and conditional visibility
+Located in `ui/` directory. Uses a **template registry** architecture where templates are registered from external git repositories, cloned on demand, and managed through a SQLite database.
+
+**Backend** — Python FastAPI application (`ui/backend/`):
+
+- **API Layer** (`app/api/`):
+  - `templates.py` — Template registry CRUD (register, list, update, delete)
+  - `tfvars_ui.py` — Scaffold generation, export/import tfvars.ui, drift detection
+  - `template_terraform.py` — Terraform plan/apply/destroy against cloned repos (with drift guards)
+  - `terraform.py` — Shared utilities (`run_command_stream`, `_get_env_for_template`)
+  - `aws.py` — AWS resource discovery (regions, AZs, keypairs, tag-based discovery)
+  - `gcp.py` — GCP resource discovery (regions, zones, networks, label-based discovery)
+- **Service Layer** (`app/services/`):
+  - `git_service.py` — Clone/pull git repos, manage clone directory
+  - `file_hash_service.py` — SHA-256 file scanning, hard-stop file classification
+  - `drift_service.py` — Compare stored hashes vs current files, report drift status
+  - `hcl_parser.py` — Parse `variables.tf` for variable definitions
+  - `tfvars_example_parser.py` — Parse `terraform.tfvars.example` for annotations
+  - `scaffold_generator.py` — Generate skeleton `tfvars.ui` from variables + annotations
+- **Database Layer** (`app/db/`):
+  - `connection.py` — Async SQLite connection management (aiosqlite)
+  - `crud.py` — `TemplateDB` and `FileHashDB` async CRUD operations
+  - `models.py` — Pydantic models for templates and file hashes
+- **Configuration** (`app/config.py`):
+  - `db_path` — SQLite database location (default: `data/registry.db`)
+  - `clone_dir` — Directory for cloned repos (default: `data/clones`)
+
+**Frontend** — React + Vite application (`ui/frontend/`):
+
+- `src/components/TerraformConfig.jsx` — Main UI with DB-driven template selector and drift indicators
+- `src/components/TemplateRegistration.jsx` — Modal for registering templates (repo URL, scaffold, export/import)
+- `src/components/DriftResolution.jsx` — Side-by-side diff view for resolving drift
+- `src/services/api.js` — API client (`api.templates.*`, `api.aws.*`, `api.gcp.*`)
+
+**Container Deployment** (`ui/docker-compose.yml`):
+
+- Backend + frontend services with nginx reverse proxy
+- `registry-data` named volume for persistent DB and clones
+
+### Template Registry Workflow
+
+1. **Register** — POST repo URL, branch, path to `/api/templates/` (clones repo, scans files)
+2. **Scaffold** — POST to `/api/templates/{id}/scaffold` (generates skeleton `tfvars.ui` from `variables.tf` + `terraform.tfvars.example`)
+3. **Export/Import** — GET/POST tfvars.ui content for offline annotation editing
+4. **Drift Check** — GET `/api/templates/{id}/drift` (compares stored file hashes against repo)
+5. **Execute** — GET `/api/templates/{id}/terraform/plan|apply|destroy` (streams output, blocks on hard-stop drift)
 
 ### UI Annotation System
 
-The UI dynamically generates configuration forms by reading annotations in `terraform.tfvars.example` files. Key annotation tags:
+Templates use `@ui-` annotations in `terraform.tfvars.example` files. The scaffold generator auto-creates these from `variables.tf` metadata; users enrich them for better UI presentation.
 
 | Tag | Description | Example |
 |-----|-------------|---------|
-| `@label` | Display name in form | `# @label AWS Region` |
-| `@description` | Help text | `# @description Select the deployment region` |
-| `@type` | Input type: text, password, number, checkbox, select, list | `# @type select` |
-| `@options` | Values for select | `# @options us-east-1, us-west-2` |
-| `@default` | Pre-filled value | `# @default us-west-2` |
-| `@required` | Required field | `# @required true` |
-| `@group` | Groups related fields | `# @group Network Settings` |
-| `@depends` | Conditional visibility | `# @depends enable_tgw=true` |
-| `@inherit` | Copy from another template | `# @inherit existing_vpc_resources.cp` |
+| `@ui-label` | Display name in form | `# @ui-label AWS Region` |
+| `@ui-description` | Help text | `# @ui-description Select the deployment region` |
+| `@ui-type` | Widget: text, password, number, checkbox, select, list | `# @ui-type select` |
+| `@ui-options` | Values for select (pipe-separated) | `# @ui-options us-east-1\|us-west-2` |
+| `@ui-default` | Pre-filled value | `# @ui-default us-west-2` |
+| `@ui-required` | Required field | `# @ui-required true` |
+| `@ui-group` | Groups related fields | `# @ui-group Network Settings` |
+| `@ui-show-if` | Conditional visibility | `# @ui-show-if enable_tgw=true` |
+| `@ui-source` | Dynamic data source | `# @ui-source aws-regions` |
+| `@ui-tag-key` | Tag key for resource discovery | `# @ui-tag-key Fortinet-Role` |
+| `@ui-tag-pattern` | Tag pattern with placeholders | `# @ui-tag-pattern {cp}-{env}-inspection-vpc` |
+| `@ui-tag-resource-type` | Resource type filter | `# @ui-tag-resource-type vpc` |
 
-**Adding a new template to UI:**
-1. Create `terraform.tfvars.example` with annotations
-2. Backend auto-detects templates with example files
-3. See `content/2_Getting_Started/2_1_Working_in_the_UI/` for full developer guide
+**Adding a new template to the UI:**
+1. Register the git repo via the Template Registration UI or API
+2. Generate scaffold (auto-creates `tfvars.ui` from `variables.tf`)
+3. Export, enrich annotations, import back
+4. See `content/2_Getting_Started/2_1_Working_in_the_UI/` for full developer guide
 
 ### AWS Credentials for UI
 
@@ -777,39 +814,6 @@ Estimated monthly costs for full lab deployment:
 - No GWLB costs
 
 Always `terraform destroy` test environments when not in use to minimize costs.
-
-## Future Work / TODO
-
-### Container Deployment Path Resolution
-
-**Status:** Not yet implemented
-
-The UI backend (`ui/backend/app/api/terraform.py`) currently locates terraform templates using a path relative to the code location:
-
-```python
-def get_terraform_dir() -> Path:
-    return Path(__file__).parent.parent.parent.parent.parent / "terraform"
-```
-
-This works for local development but **will break in container deployments** (SASE environment, FortiManager container) where the terraform templates may be mounted at a different location.
-
-**Required fix:** Update `get_terraform_dir()` to support an environment variable with fallback:
-
-```python
-import os
-from pathlib import Path
-
-def get_terraform_dir() -> Path:
-    """Get path to terraform directory."""
-    # Check for environment variable first (for container deployments)
-    if terraform_path := os.environ.get("TERRAFORM_TEMPLATES_DIR"):
-        return Path(terraform_path)
-
-    # Fall back to relative path for local development
-    return Path(__file__).parent.parent.parent.parent.parent / "terraform"
-```
-
-**Container deployment:** Set `TERRAFORM_TEMPLATES_DIR=/path/to/templates` in the container environment.
 
 ## External References
 
