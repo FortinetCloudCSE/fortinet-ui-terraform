@@ -37,10 +37,10 @@ variable "enable_ha_pair_deployment" {
   type        = bool
   default     = false
 }
-variable "access_internet_mode" {
-  description = "Variable that defines how the fortigates in the autoscale group will access the internet. 'nat_gw' or 'eip'"
-  type = string
-  default = "nat_gw"
+variable "create_nat_gateway_subnets" {
+  description = "Create NAT Gateway subnets in the inspection VPC for centralized egress"
+  type    = bool
+  default = false
 }
 variable "vpc_cidr_management" {
     description = "CIDR for the management VPC"

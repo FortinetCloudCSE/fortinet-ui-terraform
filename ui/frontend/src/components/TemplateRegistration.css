@@ -24,6 +24,10 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
+.reg-modal-wide {
+  max-width: 95vw;
+}
+
 .reg-header {
   display: flex;
   justify-content: space-between;
@@ -134,7 +138,7 @@
 }
 
 .reg-scaffold-info {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .reg-scaffold-info p {
@@ -162,4 +166,201 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   margin-bottom: 1rem;
+}
+
+/* Choose step — side-by-side comparison */
+.reg-choose-options {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.reg-choose-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.reg-choose-option h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.reg-choose-preview {
+  flex: 1;
+  min-height: 120px;
+  max-height: 35vh;
+  font-size: 0.75rem;
+}
+
+.reg-choose-option .btn {
+  align-self: center;
+  margin-top: 0.5rem;
+}
+
+/* ── Editor / Preview split ──────────────────────────── */
+
+.reg-editor-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.reg-editor-split {
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.reg-editor-pane {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.reg-scaffold-editor {
+  flex: 1;
+  min-height: 300px;
+  max-height: 60vh;
+  resize: none;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 1rem;
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+}
+
+.reg-scaffold-editor:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Preview pane */
+.reg-preview-pane {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  max-height: 60vh;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.reg-preview-loading {
+  color: #6c757d;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}
+
+.reg-preview-empty {
+  color: #6c757d;
+  padding: 2rem;
+  text-align: center;
+}
+
+.reg-preview-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Preview groups — mimic the real form */
+.reg-preview-group {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.reg-preview-group-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.reg-preview-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.reg-preview-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.reg-preview-field-full {
+  width: 100%;
+}
+
+.reg-preview-field-half {
+  width: calc(50% - 0.375rem);
+}
+
+.reg-preview-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.reg-preview-required {
+  color: #dc3545;
+  margin-left: 2px;
+}
+
+.reg-preview-conditional {
+  display: inline-block;
+  background: #ffc107;
+  color: #333;
+  font-size: 0.65rem;
+  font-weight: 700;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  text-align: center;
+  border-radius: 50%;
+  margin-left: 4px;
+  cursor: help;
+}
+
+.reg-preview-description {
+  font-size: 0.7rem;
+  color: #6c757d;
+}
+
+.reg-preview-widget input,
+.reg-preview-widget select {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.reg-preview-widget input[type="checkbox"] {
+  width: auto;
+}
+
+.reg-preview-widget select {
+  color: #495057;
 }

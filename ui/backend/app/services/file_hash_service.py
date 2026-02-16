@@ -7,7 +7,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-HARD_STOP_FILES = {"variables.tf", "terraform.tfvars.example", "terraform.tfvars"}
+HARD_STOP_FILES = {"variables.tf", "terraform.tfvars.example"}
 
 
 @dataclass(frozen=True)
@@ -53,7 +53,7 @@ class FileHashService:
             if not item.is_file():
                 continue
             name = item.name
-            if name.endswith(".tf") or name in ("terraform.tfvars.example", "terraform.tfvars"):
+            if name.endswith(".tf") or name == "terraform.tfvars.example":
                 file_hash = self.compute_file_hash(item)
                 entries.append(
                     FileHashEntry(

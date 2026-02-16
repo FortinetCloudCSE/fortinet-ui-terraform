@@ -5,10 +5,12 @@ import { validateField } from '../utils/validation';
 import { computeValue } from '../utils/compute';
 import './FormField.css';
 
-function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCredentialsValid, template, isInherited }) {
+function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCredentialsValid, template, templateId, isInherited }) {
   const [options, setOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [validationError, setValidationError] = useState(null);
+  const [licenseFiles, setLicenseFiles] = useState([]);
+  const [uploadingLicense, setUploadingLicense] = useState(false);
 
   // Check if field should be visible
   const isVisible = useMemo(() => {
@@ -68,8 +70,10 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
             break;
 
           case 'license-files':
-            if (template) {
-              const files = await api.terraform.getLicenseFiles(template);
+            if (templateId) {
+              const dir = field.file_directory || 'licenses';
+              const files = await api.terraform.getLicenseFiles(templateId, dir);
+              setLicenseFiles(files);
               optionsList = files;
             }
             break;
@@ -185,7 +189,7 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
     };
 
     loadOptions();
-  }, [field, config, awsCredentialsValid, gcpCredentialsValid, isVisible]);
+  }, [field, config, awsCredentialsValid, gcpCredentialsValid, isVisible, templateId]);
 
   // Compute value for output fields
   const computedValue = useMemo(() => {
@@ -221,6 +225,54 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
     }
 
     onChange(newValue);
+  };
+
+  // License file helpers
+  const refreshLicenseFiles = async () => {
+    if (!templateId) return;
+    const dir = field.file_directory || 'licenses';
+    try {
+      const files = await api.templates.listLicenseFiles(templateId, dir);
+      setLicenseFiles(files);
+      setOptions(files);
+    } catch (err) {
+      console.error('Failed to refresh license files:', err);
+    }
+  };
+
+  const handleLicenseUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !templateId) return;
+    const dir = field.file_directory || 'licenses';
+    setUploadingLicense(true);
+    try {
+      for (const file of files) {
+        await api.templates.uploadLicenseFile(templateId, file, dir);
+      }
+      await refreshLicenseFiles();
+    } catch (err) {
+      console.error('License upload failed:', err);
+      alert(`Upload failed: ${err.message}`);
+    } finally {
+      setUploadingLicense(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleLicenseDelete = async (filename) => {
+    if (!templateId) return;
+    const dir = field.file_directory || 'licenses';
+    try {
+      await api.templates.deleteLicenseFile(templateId, filename, dir);
+      await refreshLicenseFiles();
+      // Clear value if the deleted file was selected
+      if (value === `./${dir}/${filename}`) {
+        onChange('');
+      }
+    } catch (err) {
+      console.error('License delete failed:', err);
+      alert(`Delete failed: ${err.message}`);
+    }
   };
 
   if (!isVisible) {
@@ -329,6 +381,84 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
         );
 
       case 'select':
+        if (field.source === 'license-files') {
+          const isMulti = !!field.file_count;
+          const selectedFiles = isMulti ? (Array.isArray(value) ? value : (value ? [value] : [])) : [];
+          return (
+            <div className="license-file-field">
+              <div className="license-file-controls">
+                {!isMulti ? (
+                  <select
+                    id={field.name}
+                    name={field.name}
+                    value={value || ''}
+                    onChange={handleChange}
+                    disabled={loadingOptions || uploadingLicense}
+                    required={field.required}
+                  >
+                    <option value="">
+                      {loadingOptions ? 'Loading...' : licenseFiles.length === 0 ? 'No license files — upload one' : 'Select a license file...'}
+                    </option>
+                    {licenseFiles.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="license-file-list">
+                    {licenseFiles.length === 0 && !loadingOptions && (
+                      <span className="license-file-empty">No license files — upload below</span>
+                    )}
+                    {licenseFiles.map(f => (
+                      <div key={f.value} className="license-file-item">
+                        <span className="license-file-name">{f.label}</span>
+                        <button
+                          type="button"
+                          className="license-file-delete-btn"
+                          onClick={() => handleLicenseDelete(f.label)}
+                          title="Remove license file"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <label className="license-upload-btn" title="Upload .lic file">
+                  {uploadingLicense ? 'Uploading...' : 'Upload'}
+                  <input
+                    type="file"
+                    accept=".lic"
+                    multiple={isMulti}
+                    onChange={handleLicenseUpload}
+                    disabled={uploadingLicense || !templateId}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                {!isMulti && value && (
+                  <button
+                    type="button"
+                    className="license-file-delete-btn"
+                    onClick={() => {
+                      const filename = licenseFiles.find(f => f.value === value)?.label;
+                      if (filename) handleLicenseDelete(filename);
+                    }}
+                    title="Delete selected file"
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
+              {isMulti && field.file_count && (
+                <span className="license-file-count">
+                  {licenseFiles.length} of {field.file_count} licenses uploaded
+                </span>
+              )}
+              {!templateId && (
+                <span className="license-file-warning">Register a template to upload license files</span>
+              )}
+            </div>
+          );
+        }
         return (
           <select
             id={field.name}

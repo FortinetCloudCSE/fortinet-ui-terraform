@@ -156,7 +156,9 @@ def parse_tfvars_example(content: str) -> list[TfvarsEntry]:
                     plain_comments.append(cline)
 
             # Attach current group if not already specified in annotations
-            if current_group and "group" not in ui_annotations:
+            if "group" in ui_annotations:
+                current_group = ui_annotations["group"]
+            elif current_group:
                 ui_annotations["group"] = current_group
 
             entries.append(TfvarsEntry(

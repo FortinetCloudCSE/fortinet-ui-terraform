@@ -1,14 +1,14 @@
 #
-# access mode = nat_gw will create the nat gateway subnets, but we don't want to
-# actually create the nat gateways (and charges) until the fortgates are in place to
-# send traffic through them.
+# create_nat_gateway_subnets will create the nat gateway subnets, but we don't
+# actually create the nat gateways (and charges) until the fortigates are in place
+# to send traffic through them (in the autoscale_template phase).
 #
 # NOTE: The vpc-inspection module always creates GWLB subnets regardless of deployment mode.
 # For HA Pair deployments, these GWLB subnets are created but not used (no cost impact).
 # The UI hides GWLB subnet outputs when HA Pair deployment is selected.
 
 locals {
-  enable_nat_gateway        = var.access_internet_mode == "nat_gw" ? true : false
+  enable_nat_gateway        = var.create_nat_gateway_subnets
   create_nat_gateway        = false
   # Auto-enable HA sync subnets when HA Pair deployment is enabled
   create_ha_sync_subnets    = var.enable_ha_pair_deployment ? true : var.enable_ha_sync_subnets

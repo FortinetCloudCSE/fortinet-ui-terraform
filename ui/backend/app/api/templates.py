@@ -182,3 +182,19 @@ async def delete_template(template_id: int):
 
     logger.info("Deleted template %s (id=%s)", template.name, template_id)
     return {"success": True}
+
+
+@router.delete("/{template_id}/clone")
+async def clear_clone(template_id: int):
+    """Remove the local git clone for a template without deleting the DB record."""
+    db = get_db()
+    template_db = TemplateDB(db)
+    git_service = _git_service()
+
+    template = await template_db.get(template_id)
+    if template is None:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    removed = git_service.cleanup_clone(template.repo_url)
+    logger.info("Cleared clone for template %s (id=%s, removed=%s)", template.name, template_id, removed)
+    return {"success": True, "removed": removed}
