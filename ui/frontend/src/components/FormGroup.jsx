@@ -3,7 +3,7 @@ import FormField from './FormField';
 import { evaluateCondition } from '../utils/conditions';
 import './FormGroup.css';
 
-function FormGroup({ group, config, onFieldChange, awsCredentialsValid, gcpCredentialsValid, template, inheritedFields }) {
+function FormGroup({ group, config, onFieldChange, awsCredentialsValid, gcpCredentialsValid, template, templateId, inheritedFields }) {
   // Check if group should be visible based on show_if condition
   const isVisible = useMemo(() => {
     if (!group.show_if) return true;
@@ -49,6 +49,7 @@ function FormGroup({ group, config, onFieldChange, awsCredentialsValid, gcpCrede
             awsCredentialsValid={awsCredentialsValid}
             gcpCredentialsValid={gcpCredentialsValid}
             template={template}
+            templateId={templateId}
             isInherited={inheritedFields && inheritedFields.includes(field.name)}
           />
         ))}

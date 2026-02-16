@@ -1,4 +1,5 @@
 """Application configuration using Pydantic Settings."""
+from pathlib import Path
 from typing import List, Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -19,12 +20,6 @@ class Settings(BaseSettings):
     cors_origins: Union[List[str], str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://127.0.0.1:3001",
-        "http://127.0.0.1:3002",
-        "http://localhost:5173",  # Vite default port
-        "http://127.0.0.1:5173",
     ]
 
     @field_validator("cors_origins", mode="before")
@@ -42,6 +37,10 @@ class Settings(BaseSettings):
     # GCP Configuration (optional)
     gcp_project: str = ""
     gcp_region: str = "us-central1"
+
+    # Template Registry Database
+    db_path: Path = Path("data/registry.db")
+    clone_dir: Path = Path("data/clones")
     
     model_config = SettingsConfigDict(
         env_file=".env",

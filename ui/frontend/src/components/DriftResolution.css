@@ -1,0 +1,324 @@
+/* Drift resolution overlay */
+.drift-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+  padding: 1rem;
+}
+
+.drift-modal {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 95%;
+  max-width: 1400px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+.drift-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+.drift-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.drift-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+}
+
+.drift-close:hover {
+  color: #333;
+}
+
+/* Error */
+.drift-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 1.5rem 0;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* Loading */
+.drift-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Body: side-by-side layout */
+.drift-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Left panel: drift entries */
+.drift-entries-panel {
+  width: 280px;
+  min-width: 280px;
+  border-right: 1px solid #dee2e6;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.drift-entries-panel h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+.drift-file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.drift-file-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+
+.drift-file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.drift-file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+}
+
+.drift-file-added {
+  background-color: #d4edda;
+}
+
+.drift-file-added .drift-file-icon {
+  background-color: #28a745;
+  color: white;
+}
+
+.drift-file-changed {
+  background-color: #fff3cd;
+}
+
+.drift-file-changed .drift-file-icon {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.drift-file-removed {
+  background-color: #f8d7da;
+}
+
+.drift-file-removed .drift-file-icon {
+  background-color: #dc3545;
+  color: white;
+}
+
+.drift-hard-stop-badge {
+  background-color: #dc3545;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Legend */
+.drift-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #dee2e6;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.drift-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
+}
+
+.drift-clean-msg {
+  color: #28a745;
+  font-size: 0.9rem;
+}
+
+/* Hard-stop notice */
+.drift-hard-stop-notice {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  color: #721c24;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* Right panel: editor */
+.drift-editor-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.drift-editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.drift-editor-toolbar h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.drift-editor-toolbar .btn {
+  margin-top: 0;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+}
+
+/* Scaffold preview */
+.drift-scaffold-preview {
+  border: 2px solid #28a745;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+  max-height: 35%;
+  display: flex;
+  flex-direction: column;
+}
+
+.drift-scaffold-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: #d4edda;
+  border-bottom: 1px solid #c3e6cb;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #155724;
+  flex-shrink: 0;
+}
+
+.drift-scaffold-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.6rem !important;
+  font-size: 0.8rem !important;
+}
+
+.drift-scaffold-content {
+  margin: 0;
+  padding: 0.75rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  background-color: #f8f9fa;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Editor textarea */
+.drift-editor {
+  flex: 1;
+  width: 100%;
+  min-height: 200px;
+  padding: 0.75rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  resize: none;
+  background-color: #f8f9fa;
+  box-sizing: border-box;
+}
+
+.drift-editor:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+/* Actions bar */
+.drift-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+.drift-actions .btn {
+  margin-top: 0;
+}
