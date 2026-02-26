@@ -36,6 +36,8 @@ app = FastAPI(
     description="REST API for dynamic Terraform configuration UI with AWS and GCP validation",
     version=settings.app_version,
     lifespan=lifespan,
+    docs_url="/swagger",
+    redoc_url="/redoc",
 )
 
 # Configure CORS
