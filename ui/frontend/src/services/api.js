@@ -33,6 +33,9 @@ function _configToTfvars(config) {
         return `"${s}"`;
       }).join(', ');
       lines.push(`${key} = [${items}]`);
+    } else if (typeof value === 'string' && value.trim().startsWith('[') && value.trim().endsWith(']')) {
+      // Raw HCL list literal entered by user — write without wrapping in quotes
+      lines.push(`${key} = ${value.trim()}`);
     } else {
       lines.push(`${key} = "${value}"`);
     }
