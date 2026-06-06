@@ -319,6 +319,10 @@ export const api = {
      * @param {number} templateId - Template ID
      * @returns {Promise<Object>} Clear clone response
      */
+    getInheritedDefaults: async (templateId) => {
+      return apiFetch(`/api/templates/${templateId}/inherited-defaults`);
+    },
+
     clearClone: async (templateId) => {
       return apiFetch(`/api/templates/${templateId}/clone`, {
         method: 'DELETE',

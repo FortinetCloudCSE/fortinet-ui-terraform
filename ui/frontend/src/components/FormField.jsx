@@ -5,7 +5,7 @@ import { validateField } from '../utils/validation';
 import { computeValue } from '../utils/compute';
 import './FormField.css';
 
-function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCredentialsValid, template, templateId, isInherited }) {
+function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCredentialsValid, template, templateId, isInherited, isDerived }) {
   const [options, setOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [validationError, setValidationError] = useState(null);
@@ -325,6 +325,12 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
 
       {field.help && (
         <p className="field-help">{field.help}</p>
+      )}
+
+      {isDerived && (
+        <p className="field-help" style={{ fontStyle: 'italic', opacity: 0.75 }}>
+          ↩ Default derived from existing_vpc_resources — you may override this value.
+        </p>
       )}
 
       {validationError && (

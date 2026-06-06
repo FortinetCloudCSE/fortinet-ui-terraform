@@ -24,6 +24,7 @@ function TerraformConfig() {
   const [showBuildTerminal, setShowBuildTerminal] = useState(false);
   const [showBuildSteps, setShowBuildSteps] = useState(false);
   const [inheritedFields, setInheritedFields] = useState([]);
+  const [derivedFields, setDerivedFields] = useState([]);
   const [showSaveLogModal, setShowSaveLogModal] = useState(false);
   const [registeredTemplates, setRegisteredTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
@@ -160,6 +161,25 @@ function TerraformConfig() {
         const gcpStatus = await checkGcpCredentials();
         if (gcpStatus.valid && gcpStatus.project_id) {
           newConfig.gcp_project = gcpStatus.project_id;
+        }
+      }
+
+      // Load inherited defaults from sibling existing_vpc_resources template
+      const dbTemplate = registeredTemplates.find(t => t.name === template);
+      if (dbTemplate) {
+        try {
+          const inherited = await api.templates.getInheritedDefaults(dbTemplate.id);
+          if (inherited.defaults && Object.keys(inherited.defaults).length > 0) {
+            // Apply as defaults — only overwrite fields not already set by user
+            Object.entries(inherited.defaults).forEach(([k, v]) => {
+              if (newConfig[k] === undefined || newConfig[k] === null || newConfig[k] === '' || newConfig[k] === false) {
+                newConfig[k] = v;
+              }
+            });
+            setDerivedFields(Object.keys(inherited.defaults));
+          }
+        } catch (err) {
+          console.warn('Could not load inherited defaults:', err);
         }
       }
 
@@ -566,6 +586,7 @@ function TerraformConfig() {
             template={template}
             templateId={selectedTemplateId}
             inheritedFields={inheritedFields}
+            derivedFields={derivedFields}
           />
         ))}
       </main>
