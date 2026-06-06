@@ -38,6 +38,7 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/swagger",
     redoc_url="/redoc",
+    redirect_slashes=False,
 )
 
 # Configure CORS
