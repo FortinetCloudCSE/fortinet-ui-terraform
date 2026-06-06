@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db import init_db, close_db
 from app.schemas import HealthResponse
-from app.api import root, aws, gcp, templates, tfvars_ui, template_terraform, template_files
+from app.api import root, aws, gcp, templates, tfvars_ui, template_terraform, template_files, fortiflex
 
 # Configure logging
 logging.basicConfig(
@@ -57,6 +57,7 @@ app.include_router(templates.router)
 app.include_router(tfvars_ui.router)
 app.include_router(template_terraform.router)
 app.include_router(template_files.router)
+app.include_router(fortiflex.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["health"])

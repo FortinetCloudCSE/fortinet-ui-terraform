@@ -111,6 +111,70 @@ def _template_name_for_env(template) -> str:
     return template.repo_path if template.repo_path else template.name
 
 
+# Fields to pull from existing_vpc_resources and their mapping to autoscale_template
+_INHERITED_DEFAULTS_MAP = {
+    "enable_build_management_vpc": "enable_dedicated_management_vpc",
+    "create_management_subnet_in_inspection_vpc": "enable_dedicated_management_eni",
+}
+
+def _parse_tfvars_bools(tfvars_path: Path) -> dict:
+    """Parse boolean values from a terraform.tfvars file."""
+    result = {}
+    if not tfvars_path.exists():
+        return result
+    for line in tfvars_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        key, _, raw = line.partition("=")
+        key = key.strip()
+        raw = raw.strip().lower()
+        if raw in ("true", "false"):
+            result[key] = raw == "true"
+    return result
+
+
+@router.get("/{template_id}/inherited-defaults")
+async def get_inherited_defaults(template_id: int):
+    """Return default values derived from a sibling existing_vpc_resources template.
+
+    Looks for another registered template whose repo_path contains
+    'existing_vpc_resources' and reads its saved terraform.tfvars to
+    derive sensible defaults for the target template.
+    """
+    db = get_db()
+    template_db = TemplateDB(db)
+    all_templates = await template_db.list()
+
+    # Find sibling existing_vpc_resources template (same repo, different path)
+    target = await template_db.get(template_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    source_template = None
+    for t in all_templates:
+        if t.id != template_id and "existing_vpc_resources" in (t.repo_path or ""):
+            source_template = t
+            break
+
+    if source_template is None:
+        return {"defaults": {}, "source": None}
+
+    git_service = _git_service()
+    source_dir = git_service.get_template_dir(source_template.repo_url, source_template.repo_path)
+    tfvars_path = source_dir / "terraform.tfvars"
+    source_values = _parse_tfvars_bools(tfvars_path)
+
+    defaults = {}
+    for src_field, dst_field in _INHERITED_DEFAULTS_MAP.items():
+        if src_field in source_values:
+            defaults[dst_field] = source_values[src_field]
+
+    return {"defaults": defaults, "source": source_template.name}
+
+
 @router.post("/{template_id}/terraform/write-tfvars")
 async def write_tfvars(template_id: int, request: WriteTfvarsRequest):
     """Write terraform.tfvars content to the cloned template directory.

@@ -5,7 +5,7 @@ import { validateField } from '../utils/validation';
 import { computeValue } from '../utils/compute';
 import './FormField.css';
 
-function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCredentialsValid, template, templateId, isInherited }) {
+function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCredentialsValid, template, templateId, isInherited, isDerived }) {
   const [options, setOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [validationError, setValidationError] = useState(null);
@@ -25,7 +25,7 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
 
   // Load options for select fields
   useEffect(() => {
-    if (!isVisible || field.type !== 'select') return;
+    if (!isVisible || (field.type !== 'select' && field.type !== 'multiselect')) return;
 
     const loadOptions = async () => {
       setLoadingOptions(true);
@@ -157,6 +157,33 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
               }
             }
             break;
+
+          case 'fortiflex-configs': {
+            const flexUser = config.fortiflex_username;
+            const flexPass = config.fortiflex_password;
+            if (flexUser && flexPass) {
+              const result = await api.fortiflex.getConfigs(flexUser, flexPass);
+              optionsList = (result.configs || []).map(c => ({
+                value: c.id,
+                label: c.name ? `${c.id} — ${c.name}` : c.id,
+              }));
+            }
+            break;
+          }
+
+          case 'fortiflex-serials': {
+            const flexUser = config.fortiflex_username;
+            const flexPass = config.fortiflex_password;
+            const configIds = (Array.isArray(config.fortiflex_configid_list)
+              ? config.fortiflex_configid_list
+              : []
+            ).filter(id => id && id !== '');
+            if (flexUser && flexPass && configIds.length > 0) {
+              const result = await api.fortiflex.getSerials(flexUser, flexPass, configIds);
+              optionsList = (result.serials || []).map(sn => ({ value: sn, label: sn }));
+            }
+            break;
+          }
 
           case 'static':
             if (field.options) {
@@ -298,6 +325,12 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
 
       {field.help && (
         <p className="field-help">{field.help}</p>
+      )}
+
+      {isDerived && (
+        <p className="field-help" style={{ fontStyle: 'italic', opacity: 0.75 }}>
+          ↩ Default derived from existing_vpc_resources — you may override this value.
+        </p>
       )}
 
       {validationError && (
@@ -523,24 +556,36 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
 
       case 'multiselect':
         return (
-          <select
-            id={field.name}
-            name={field.name}
-            multiple
-            value={Array.isArray(value) ? value : []}
-            onChange={(e) => {
-              const selected = Array.from(e.target.selectedOptions, opt => opt.value);
-              onChange(selected);
-            }}
-            disabled={loadingOptions}
-            required={field.required}
-          >
-            {options.map(opt => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <div>
+            <select
+              id={field.name}
+              name={field.name}
+              multiple
+              size={Math.min(Math.max(options.length, 3), 8)}
+              value={Array.isArray(value) ? value : []}
+              onChange={(e) => {
+                const selected = Array.from(e.target.selectedOptions, opt => opt.value);
+                onChange(selected);
+              }}
+              disabled={loadingOptions}
+              required={field.required}
+              style={{ width: '100%' }}
+            >
+              {loadingOptions
+                ? <option disabled>Loading...</option>
+                : options.length === 0
+                  ? <option disabled>No options available</option>
+                  : options.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))
+              }
+            </select>
+            {options.length > 0 && (
+              <p className="field-help" style={{ marginTop: '4px' }}>
+                Hold Ctrl/Cmd to select multiple
+              </p>
+            )}
+          </div>
         );
 
       case 'list':

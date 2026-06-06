@@ -265,6 +265,22 @@ export const api = {
     },
   },
 
+  // FortiFlex API methods
+  fortiflex: {
+    getConfigs: async (username, password) => {
+      return apiFetch('/api/fortiflex/configs', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+    },
+    getSerials: async (username, password, configIds) => {
+      return apiFetch('/api/fortiflex/serials', {
+        method: 'POST',
+        body: JSON.stringify({ username, password, config_ids: configIds }),
+      });
+    },
+  },
+
   // Template registry methods
   templates: {
     /**
@@ -303,6 +319,10 @@ export const api = {
      * @param {number} templateId - Template ID
      * @returns {Promise<Object>} Clear clone response
      */
+    getInheritedDefaults: async (templateId) => {
+      return apiFetch(`/api/templates/${templateId}/inherited-defaults`);
+    },
+
     clearClone: async (templateId) => {
       return apiFetch(`/api/templates/${templateId}/clone`, {
         method: 'DELETE',
