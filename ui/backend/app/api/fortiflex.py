@@ -40,26 +40,52 @@ async def _get_token(username: str, password: str) -> str:
 
 @router.post("/configs")
 async def list_configs(creds: FlexCredentials):
-    """Authenticate and return all FortiFlex configuration IDs and names."""
+    """Authenticate and return all FortiFlex configuration IDs and names.
+
+    configs/list requires a programSerialNumber, so we first call
+    programs/list to discover all program serial numbers, then fetch
+    configs for each program.
+    """
     token = await _get_token(creds.username, creds.password)
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
     async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(
-            f"{FLEX_BASE}/configs/list",
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+        # Step 1: list programs to get programSerialNumbers
+        prog_resp = await client.post(
+            f"{FLEX_BASE}/programs/list",
+            headers=headers,
             json={},
         )
-    if resp.status_code != 200:
-        logger.warning("FortiFlex configs/list failed: %s %s", resp.status_code, resp.text)
-        raise HTTPException(status_code=resp.status_code, detail="Failed to fetch FortiFlex configurations")
-    data = resp.json()
-    configs = data.get("configs", [])
+        if prog_resp.status_code != 200:
+            logger.warning("FortiFlex programs/list failed: %s %s", prog_resp.status_code, prog_resp.text)
+            raise HTTPException(status_code=prog_resp.status_code, detail="Failed to fetch FortiFlex programs")
+        programs = prog_resp.json().get("programs", []) or []
+
+        # Step 2: fetch configs for each program
+        all_configs = []
+        for program in programs:
+            psn = program.get("serialNumber") or program.get("programSerialNumber")
+            if not psn:
+                continue
+            cfg_resp = await client.post(
+                f"{FLEX_BASE}/configs/list",
+                headers=headers,
+                json={"programSerialNumber": psn},
+            )
+            if cfg_resp.status_code != 200:
+                logger.warning("FortiFlex configs/list failed for program %s: %s", psn, cfg_resp.status_code)
+                continue
+            configs = cfg_resp.json().get("configs", []) or []
+            all_configs.extend(configs)
+
     return {
         "configs": [
             {
                 "id": str(c.get("id", "")),
-                "name": c.get("name") or c.get("programSerialNumber") or str(c.get("id", "")),
+                "name": c.get("name") or str(c.get("id", "")),
             }
-            for c in configs
+            for c in all_configs
+            if c.get("id")
         ]
     }
 
