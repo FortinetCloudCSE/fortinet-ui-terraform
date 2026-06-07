@@ -181,6 +181,12 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
             if (flexUser && flexPass && configIds.length > 0) {
               const result = await api.fortiflex.getSerials(flexUser, flexPass, configIds);
               optionsList = (result.serials || []).map(sn => ({ value: sn, label: sn }));
+              // Auto-select all serials — user removes ones they don't want
+              // Only overwrite if value is empty or still at default [""]
+              const currentVal = Array.isArray(value) ? value.filter(v => v && v !== '') : [];
+              if (currentVal.length === 0 && optionsList.length > 0) {
+                onChange(optionsList.map(o => o.value));
+              }
             }
             break;
           }
@@ -554,7 +560,63 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
           />
         );
 
-      case 'multiselect':
+      case 'multiselect': {
+        // Chip-style for fortiflex-serials: all pre-selected, click × to remove
+        if (field.source === 'fortiflex-serials') {
+          const selected = Array.isArray(value) ? value.filter(v => v && v !== '') : [];
+          const allSerials = options.map(o => o.value);
+          const removed = allSerials.filter(sn => !selected.includes(sn));
+          return (
+            <div>
+              {loadingOptions && <p className="field-help">Loading serial numbers...</p>}
+              {!loadingOptions && options.length === 0 && (
+                <p className="field-help">Select Config IDs above to load serial numbers.</p>
+              )}
+              {!loadingOptions && options.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                    {selected.map(sn => (
+                      <span key={sn} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '4px',
+                        background: '#2a5298', color: '#fff', borderRadius: '4px',
+                        padding: '3px 8px', fontSize: '0.85em', fontFamily: 'monospace'
+                      }}>
+                        {sn}
+                        <button
+                          type="button"
+                          onClick={() => onChange(selected.filter(s => s !== sn))}
+                          style={{
+                            background: 'none', border: 'none', color: '#fff',
+                            cursor: 'pointer', padding: '0 2px', fontSize: '1em', lineHeight: 1
+                          }}
+                          title={`Remove ${sn}`}
+                        >×</button>
+                      </span>
+                    ))}
+                  </div>
+                  {removed.length > 0 && (
+                    <div>
+                      <p className="field-help" style={{ marginBottom: '4px' }}>
+                        Excluded ({removed.length}): {removed.join(', ')}
+                        <button
+                          type="button"
+                          onClick={() => onChange(allSerials)}
+                          style={{
+                            marginLeft: '8px', background: 'none', border: '1px solid #888',
+                            borderRadius: '3px', padding: '1px 6px', cursor: 'pointer', fontSize: '0.8em'
+                          }}
+                        >Restore all</button>
+                      </p>
+                    </div>
+                  )}
+                  <p className="field-help">{selected.length} of {options.length} serial numbers included</p>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // Default multiselect for other sources
         return (
           <div>
             <select
@@ -587,6 +649,7 @@ function FormField({ field, value, config, onChange, awsCredentialsValid, gcpCre
             )}
           </div>
         );
+      }
 
       case 'list':
         return (
