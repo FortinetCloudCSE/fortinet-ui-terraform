@@ -45,6 +45,12 @@ pipeline {
               }
             }
        }
+
+        stage('Clean workspace') {
+            steps {
+                deleteDir()
+            }
+        }
     }
     post {
      success {
